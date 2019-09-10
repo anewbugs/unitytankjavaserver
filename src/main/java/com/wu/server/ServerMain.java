@@ -1,5 +1,6 @@
 package com.wu.server;
 
+import com.wu.server.msagechannehandler.ServerHandle;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -7,7 +8,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.string.StringDecoder;
 
 
 /**
@@ -34,7 +34,6 @@ public class ServerMain {
                     protected void initChannel(NioSocketChannel nioSocketChannel) {
                         nioSocketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024,0,1,0,0));
                         nioSocketChannel.pipeline().addLast(new LengthFieldPrepender(1));
-                        //nioSocketChannel.pipeline().addLast(new StringDecoder());
                         nioSocketChannel.pipeline().addLast(new ServerHandle());
                     }
                 });
