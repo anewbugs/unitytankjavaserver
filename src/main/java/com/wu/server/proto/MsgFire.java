@@ -1,6 +1,6 @@
-package com.wu.server.proto.sync;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
+import com.wu.server.proto.base.MsgBase;
 
 public class MsgFire extends MsgBase {
     public MsgFire() {protoName = "MsgFire";}

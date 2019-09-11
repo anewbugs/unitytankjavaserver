@@ -1,4 +1,4 @@
-package com.wu.server.proto.battlemsg.info;
+package com.wu.server.proto.base;
 
 public class TankInfo {
     public String id = "";	//玩家id

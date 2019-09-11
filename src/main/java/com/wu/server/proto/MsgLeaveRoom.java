@@ -1,6 +1,6 @@
-package com.wu.server.proto.room;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
+import com.wu.server.proto.base.MsgBase;
 
 public class MsgLeaveRoom extends MsgBase {
     public MsgLeaveRoom() {protoName = "MsgLeaveRoom";}

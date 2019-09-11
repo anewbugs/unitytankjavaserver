@@ -1,4 +1,4 @@
-package com.wu.server.proto.room.info;
+package com.wu.server.proto.base;
 
 public class RoomInfo {
     public int id = 0;		//房间id

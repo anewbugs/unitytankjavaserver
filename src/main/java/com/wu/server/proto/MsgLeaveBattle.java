@@ -1,6 +1,6 @@
-package com.wu.server.proto.battlemsg;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
+import com.wu.server.proto.base.MsgBase;
 
 public class MsgLeaveBattle extends MsgBase {
     public MsgLeaveBattle() {protoName = "MsgLeaveBattle";}

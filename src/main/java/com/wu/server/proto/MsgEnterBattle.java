@@ -1,7 +1,7 @@
-package com.wu.server.proto.battlemsg;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
-import com.wu.server.proto.battlemsg.info.TankInfo;
+import com.wu.server.proto.base.MsgBase;
+import com.wu.server.proto.base.TankInfo;
 
 public class MsgEnterBattle extends MsgBase {
     public MsgEnterBattle() {protoName = "MsgEnterBattle";}

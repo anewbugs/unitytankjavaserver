@@ -1,7 +1,7 @@
-package com.wu.server.proto.room;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
-import com.wu.server.proto.room.info.PlayerInfo;
+import com.wu.server.proto.base.MsgBase;
+import com.wu.server.proto.base.PlayerInfo;
 
 public class MsgGetRoomInfo extends MsgBase {
     public MsgGetRoomInfo() {protoName = "MsgGetRoomInfo";}

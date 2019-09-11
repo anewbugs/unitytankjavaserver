@@ -1,6 +1,6 @@
-package com.wu.server.proto.notepad;
+package com.wu.server.proto;
 
-import com.wu.server.proto.MsgBase;
+import com.wu.server.proto.base.MsgBase;
 
 public class MsgGetText extends MsgBase {
     public MsgGetText() {protoName = "MsgGetText";}

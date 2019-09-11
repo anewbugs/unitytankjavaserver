@@ -1,7 +1,8 @@
-package com.wu.server.proto;
+package com.wu.server.proto.base;
 
 import com.alibaba.fastjson.JSONObject;
-import  com.wu.server.proto.login.MsgBaseLogin;
+import com.wu.server.proto.MsgLogin;
+
 import java.util.HashMap;
 
 /**
@@ -10,11 +11,6 @@ import java.util.HashMap;
  * @version 1.0
  */
 public class MsgBase {
-    public static HashMap<String,Class> h = new HashMap<>( );
-    static {
-        h.put("MsgLogin",MsgBaseLogin.class);
-    }
-
     public String protoName = null;
 
     /**编码
@@ -40,9 +36,17 @@ public class MsgBase {
      */
     public static  MsgBase Decode(String protoName, byte[] bytes){
         //字节数组转化为JSON对象
-        JSONObject jsonObject = (JSONObject) JSONObject.parse(bytes);
-        //将JSON对象转化为MsgaBase对象
-        MsgBase msgBase = (MsgBaseLogin)JSONObject.toJavaObject(jsonObject,h.get(protoName));
-        return msgBase;
+        try {
+            Class<?> clazz = Class.forName("com.wu.server.proto."+protoName);
+            JSONObject jsonObject = (JSONObject) JSONObject.parse(bytes);
+            System.out.println(jsonObject);
+            //将JSON对象转化为MsgaBase对象
+
+            MsgBase msgBase = (MsgLogin)JSONObject.toJavaObject(jsonObject, clazz);
+            return msgBase;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

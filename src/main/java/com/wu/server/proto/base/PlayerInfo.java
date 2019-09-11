@@ -1,4 +1,4 @@
-package com.wu.server.proto.room.info;
+package com.wu.server.proto.base;
 
 public class PlayerInfo {
     public String id = "lpy";	//账号
