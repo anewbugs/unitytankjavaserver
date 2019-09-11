@@ -11,10 +11,10 @@ import java.util.HashMap;
  */
 public class MsgBase {
     public static HashMap<String,Class> h = new HashMap<>( );
-
     static {
         h.put("MsgLogin",MsgBaseLogin.class);
     }
+
     public String protoName = null;
 
     /**编码
@@ -32,19 +32,17 @@ public class MsgBase {
         return jsonByte;
     }
 
-    /**
-     * 解码
+    /**解码
+     * 将JSON字节数组转换成对应的javaBean对象
      * @param protoName
      * @param bytes
-     * @return
+     * @return msgBase
      */
-//    public static MsgBase Decode(String protoName, byte[] bytes){
-//        HashMap<String,Class> msgBaseMatch = new HashMap<String, Class>();
-//        static{
-//
-//
-//        }
-//
-//        return null;
-//    }
+    public static  MsgBase Decode(String protoName, byte[] bytes){
+        //字节数组转化为JSON对象
+        JSONObject jsonObject = (JSONObject) JSONObject.parse(bytes);
+        //将JSON对象转化为MsgaBase对象
+        MsgBase msgBase = (MsgBaseLogin)JSONObject.toJavaObject(jsonObject,h.get(protoName));
+        return msgBase;
+    }
 }
