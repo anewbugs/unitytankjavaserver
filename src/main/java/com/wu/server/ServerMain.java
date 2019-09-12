@@ -1,5 +1,6 @@
 package com.wu.server;
 
+import com.wu.server.handler.ConnectionHandler;
 import com.wu.server.handler.ServerHandle;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
@@ -8,6 +9,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 
 
 /**
@@ -32,9 +34,19 @@ public class ServerMain {
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
                     protected void initChannel(NioSocketChannel nioSocketChannel) {
+                        //超时控制handler
+                        nioSocketChannel.pipeline().addLast(new ReadTimeoutHandler(30));
+                        //连接处理Handler
+                        nioSocketChannel.pipeline().addLast(new ConnectionHandler());
+                        //消息长度处里Handler
+                        //解决半包和粘包问题
                         nioSocketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024,0,1,0,0));
+                        //数据封包处理Handler
                         nioSocketChannel.pipeline().addLast(new LengthFieldPrepender(1));
+                        //消息服务处理Handler
+                        //处理和回应各消息
                         nioSocketChannel.pipeline().addLast(new ServerHandle());
+
                     }
                 });
         bind(serverBootstrap,8000);

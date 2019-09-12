@@ -1,6 +1,5 @@
 package com.wu.server.handler;
 
-import com.wu.server.proto.MsgLogin;
 import com.wu.server.proto.base.MsgBase;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -13,12 +12,13 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        System.out.println(ctx);
 
         ByteBuf requestByteBuf = (ByteBuf) msg;
         //消息体长度
-        byte[] msgLengthbytes =new byte[1] ;
-        requestByteBuf.readBytes(msgLengthbytes);
-        int msgLength = (int)msgLengthbytes[0];
+        byte[] msgLengthBytes =new byte[1] ;
+        requestByteBuf.readBytes(msgLengthBytes);
+        int msgLength = (int)msgLengthBytes[0];
         //解析协议名
         byte[] protoNameLengthBytes = new byte[1];
         requestByteBuf.readBytes(protoNameLengthBytes);
