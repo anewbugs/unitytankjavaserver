@@ -1,7 +1,13 @@
 package com.wu.server.handler;
 
+import com.wu.server.bean.Player;
+import com.wu.server.bean.PlayerData;
+import com.wu.server.dao.PlayerDataDao;
+import com.wu.server.dao.UserDao;
+import com.wu.server.proto.MsgKick;
 import com.wu.server.proto.MsgLogin;
 import com.wu.server.proto.base.MsgBase;
+import com.wu.server.service.PlayerService;
 import io.netty.channel.ChannelHandlerContext;
 
 public class MsgHandler {
@@ -16,7 +22,45 @@ public class MsgHandler {
      */
     public static void MsgLogin(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgLogin msg = (MsgLogin) msgBase;
-
+        //密码校验
+        if (!PlayerService.CheckedPlayer(msg.id,msg.pw)){
+            msg.result = 1;
+            //发送登入失败协议
+            ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+            return;
+        }
+        //不允许再次登入
+        if(PlayerService.IsOnline(msg.id)){
+            msg.result=1;
+            //发送登入失败协议
+            ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+            return ;
+        }
+        //如果已经登陆，踢下线
+        if(PlayerService.IsOnline(msg.id)){
+            //发送踢下线协议
+            Player other = PlayerService.GetPlayer(msg.id);
+            MsgKick msgKick = new MsgKick();
+            msgKick.reason = 0;
+            other.getChannel().writeAndFlush(MsgBase.Encode(other.getChannel().alloc().ioBuffer(),msgKick));
+            //断开连接
+            other.getChannel().close();
+        }
+        //获取玩家数据
+        PlayerData playerData = PlayerDataDao.GetPlayerData(msg.id);
+        if(playerData == null){
+            msg.result = 1;
+            ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+            return;
+        }
+        //构建Player
+        Player player = new Player(ctx.channel());
+        player.setId(msg.id);
+        player.setData(playerData);
+        PlayerService.AddPlayer(msg.id,player);
+        //c.player = player;
+        msg.result = 0;
+        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
 
 }

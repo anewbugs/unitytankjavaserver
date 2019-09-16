@@ -43,6 +43,12 @@ public class UserDao
         return false;
     }
 
+    /**
+     * 查询数据库，确认用户正确
+     * @param iduser
+     * @param password
+     * @return
+     */
     public static boolean selectToLogin(String iduser, String password) {
         ResultSet rs=null;
         Connection conn=null;
@@ -85,13 +91,11 @@ public class UserDao
         try {
 
             conn = SqlUntil.GetSqlConnect();
-            String sql="insert into user(iduser,password,email,tele) values (?,?,?,?)";
+            String sql="insert into user(iduser,password) values (?,?)";
             if (conn != null) {
                 PreparedStatement preStmt=conn.prepareStatement(sql);
                 preStmt.setString(1, iduser);
                 preStmt.setString(2, password);
-                preStmt.setString(3, email);
-                preStmt.setString(4, tele);
                 preStmt.executeUpdate();
                 preStmt.close();
             }

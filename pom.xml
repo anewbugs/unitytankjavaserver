@@ -20,6 +20,7 @@
         </plugins>
     </build>
 
+
     <!--版本控制-->
     <properties>
         <netty-all.version>4.1.6.Final</netty-all.version>
@@ -39,18 +40,13 @@
             <artifactId>fastjson</artifactId>
             <version>${json-fast.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.17</version>
         </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>RELEASE</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 
 </project>
