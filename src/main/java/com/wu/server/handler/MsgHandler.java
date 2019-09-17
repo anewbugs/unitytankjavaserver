@@ -4,12 +4,19 @@ import com.wu.server.bean.Player;
 import com.wu.server.bean.PlayerData;
 import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.dao.UserDao;
+import com.wu.server.proto.MsgGetAchieve;
 import com.wu.server.proto.MsgKick;
 import com.wu.server.proto.MsgLogin;
 import com.wu.server.proto.base.MsgBase;
+import com.wu.server.service.ConnectionService;
 import com.wu.server.service.PlayerService;
 import io.netty.channel.ChannelHandlerContext;
 
+/**
+ * 消息处理器
+ * @author wu
+ * @version 1.0
+ */
 public class MsgHandler {
 
 
@@ -62,5 +69,21 @@ public class MsgHandler {
         msg.result = 0;
         ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
+
+
+
+/***************************************************房间管理*************************************************************/
+/***********************************************************************************************************************/
+    public static void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgGetAchieve msg = (MsgGetAchieve)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+
+        msg.win = player.getData().getWin();
+        msg.lost = player.getData().getLost();
+
+        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+    }
+
 
 }

@@ -1,5 +1,6 @@
 package com.wu.server.bean;
 
+import com.wu.server.proto.base.MsgBase;
 import io.netty.channel.Channel;
 
 public class Player {
@@ -123,5 +124,9 @@ public class Player {
 
     public void setData(PlayerData data) {
         this.data = data;
+    }
+
+    public void send(MsgBase msg){
+        channel.writeAndFlush(MsgBase.Encode(channel.alloc().ioBuffer(),msg));
     }
 }
