@@ -1,15 +1,10 @@
 package com.wu.server.handler;
 
-import com.wu.server.bean.Player;
-import com.wu.server.bean.PlayerData;
-import com.wu.server.dao.PlayerDataDao;
-import com.wu.server.dao.UserDao;
-import com.wu.server.proto.MsgGetAchieve;
-import com.wu.server.proto.MsgKick;
-import com.wu.server.proto.MsgLogin;
+import com.wu.server.bean.*;
+import com.wu.server.dao.*;
+import com.wu.server.proto.*;
 import com.wu.server.proto.base.MsgBase;
-import com.wu.server.service.ConnectionService;
-import com.wu.server.service.PlayerService;
+import com.wu.server.service.*;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -65,15 +60,38 @@ public class MsgHandler {
         player.setId(msg.id);
         player.setData(playerData);
         PlayerService.AddPlayer(msg.id,player);
-        //c.player = player;
+       ConnectionService.clientState.put(ctx,player);
         msg.result = 0;
         ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
 
+    /**
+     * 注册协议处理
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgRegister(ChannelHandlerContext ctx,MsgBase msgBase){
+        MsgRegister msg = (MsgRegister)msgBase;
+        //注册
+        if(UserDao.Register(msg.id, msg.pw)){
+            PlayerDataDao.CreatePlayer(msg.id);
+            msg.result = 0;
+        }
+        else{
+            msg.result = 1;
+        }
+        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+    }
 
 
 /***************************************************房间管理*************************************************************/
 /***********************************************************************************************************************/
+
+    /**
+     * 战绩获取
+     * @param ctx
+     * @param msgBase
+     */
     public static void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgGetAchieve msg = (MsgGetAchieve)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
@@ -85,5 +103,153 @@ public class MsgHandler {
         ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
 
+    public static void MsgGetRoomList(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgGetRoomList msg = (MsgGetRoomList)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), RoomService.ToMsg()));
+        //player.Send(RoomManager.ToMsg());
+    }
+    /**
+     *  创建房间
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgCreateRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgCreateRoom msg = (MsgCreateRoom)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        //已经在房间里
+        if(player.getRoomId() >=0 ){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //创建
+        Room room = RoomService.AddRoom();
+        room.AddPlayer(player.getId());
+
+        msg.result = 0;
+        player.send(msg);
+    }
+
+    /**
+     * 进入房间
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgEnterRoom(ChannelHandlerContext ctx,  MsgBase msgBase){
+        MsgEnterRoom msg = (MsgEnterRoom)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        //已经在房间里
+        if(player.getRoomId() >=0 ){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //获取房间
+        Room room = RoomService.GetRoom(msg.id);
+        if(room == null){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //进入
+        if(!room.AddPlayer(player.getId())){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //返回协议
+        msg.result = 0;
+        player.send(msg);
+    }
+    /**
+     *  获取房间信息
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgGetRoomInfo(ChannelHandlerContext ctx,   MsgBase msgBase){
+        MsgGetRoomInfo msg = (MsgGetRoomInfo)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+
+        Room room = RoomService.GetRoom(player.getRoomId());
+        if(room == null){
+            player.send(msg);
+            return;
+        }
+
+        player.send(room.ToMsg());
+    }
+
+    /**
+     *  离开房间
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgLeaveRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgLeaveRoom msg = (MsgLeaveRoom)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+
+        Room room = RoomService.GetRoom(player.getRoomId());
+        if(room == null){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+
+        room.RemovePlayer(player.getId());
+        //返回协议
+        msg.result = 0;
+        player.send(msg);
+    }
+
+    /**
+     * 请求开始战斗
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgStartBattle(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgStartBattle msg = (MsgStartBattle)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        //room
+        Room room = RoomService.GetRoom(player.getRoomId());
+        if(room == null){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //是否是房主
+        if(!room.isOwner(player)){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //开战
+        if(!room.StartBattle()){
+            msg.result = 1;
+            player.send(msg);
+            return;
+        }
+        //成功
+        msg.result = 0;
+        player.send(msg);
+    }
+/***************************************************ping管理*************************************************************/
+/***********************************************************************************************************************/
+    /**
+     * ping消息处理
+     * @param ctx
+     * @param msgBase
+     */
+    public static void MsgPing(ChannelHandlerContext ctx, MsgBase msgBase){
+   // c.lastPingTime = NetManager.GetTimeStamp();
+    MsgPong msgPong = new MsgPong();
+    ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), msgPong));
+}
 
 }

@@ -59,7 +59,7 @@ public class MsgBase {
     public static byte[] EncodeMsg(MsgBase msgBase){
         //MsgBase对象转化为JSONObject对象
         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(msgBase);
-        System.out.println(new Date() +"MsgBase-send: "+ jsonObject);
+        System.out.println(new Date() +" MsgBase Response: "+ jsonObject);
         //将JSONObject对象转化为字符串对象
         String jsonStr = jsonObject.toJSONString();
         //将JSON字符串转化为字节数组
@@ -78,7 +78,7 @@ public class MsgBase {
         try {
             Class<?> clazz = Class.forName("com.wu.server.proto."+protoName);
             JSONObject jsonObject = (JSONObject) JSONObject.parse(bytes);
-            System.out.println(new Date() +"MsgBase-receive: "+ jsonObject);
+            System.out.println(new Date() +" MsgBase Receive: "+ jsonObject);
             //将JSON对象转化为MsgaBase对象
 
             MsgBase msgBase = (MsgBase) JSONObject.toJavaObject(jsonObject, clazz);

@@ -4,8 +4,15 @@ import com.wu.server.Until.SqlUntil;
 
 import java.sql.*;
 
-public class UserDao
-{
+/**
+ * user表调用类
+ */
+public class UserDao {
+    /**
+     * 查询账号
+     * @param iduser
+     * @return
+     */
     public static boolean SelectById(String iduser) {
         ResultSet rs=null;
         Connection conn=null;
@@ -85,25 +92,37 @@ public class UserDao
         return false;
     }
 
-    public static void InsertToSign(String iduser, String password, String email, String tele) {
+    /**
+     * 注册账号
+     * @param iduser
+     * @param password
+     * @return
+     */
+    public static boolean Register(String iduser, String password) {
         Connection conn=null;
 
         try {
 
             conn = SqlUntil.GetSqlConnect();
-            String sql="insert into user(iduser,password) values (?,?)";
+            String sql="insert into user(iduser,password) values (?,?);";
             if (conn != null) {
                 PreparedStatement preStmt=conn.prepareStatement(sql);
                 preStmt.setString(1, iduser);
                 preStmt.setString(2, password);
-                preStmt.executeUpdate();
+                int count =preStmt.executeUpdate();
                 preStmt.close();
+//                System.out.println(count);
+                if(count == 1)
+                    return  true;
+                else
+                    return false;
             }
 
 
         } catch (SQLException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return false;
         } finally {
 
             try {
@@ -115,5 +134,6 @@ public class UserDao
             }
 
         }
+        return false;
     }
 }
