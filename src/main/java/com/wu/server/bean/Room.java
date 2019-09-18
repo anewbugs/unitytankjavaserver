@@ -31,15 +31,15 @@ public class Room {
     static float[][][] birthConfig =  {
         //阵营1出生点
         {
-            {262.3f, -8.0f, 342.7f, 0, -151.0f, 0f},//出生点1
-            {229.7f, -5.5f, 354.4f, 0, -164.2f, 0f},//出生点2
-            {197.1f, -3.6f, 347.7f, 0, -193.0f, 0f},//出生点3
+            { 5f, 0f, -10f,     0f, 0f,0f},//出生点1
+            { 0f, 0f, -10f,     0f, 0f,0f},//出生点2
+            {-5f, 0f, -10f,     0f, 0f,0f},//出生点3
         },
         //阵营2出生点
         {
-            {-80.3f,  9.5f, 114.6f, 0, -294.0f,  0f},//出生点1
-            {-91.1f, 15.5f, 139.1f, 0, -294.2f, 0f},//出生点2
-            {-62.3f,  1.2f, 76.1f,  0, -315.4f, 0f},//出生点3
+            { 5f, 0f, -10f,     0f, 180f,0f},//出生点1
+            { 0f, 0f, -10f,     0f, 180f,0f},//出生点2
+            {-5f, 0f, -10f,     0f, 180f,0f},//出生点3
         },
     };
     //上一次判断结果的时间
@@ -218,7 +218,7 @@ public class Room {
 
         player.setX( birthConfig[camp-1] [index][0]);
         player.setY( birthConfig[camp-1][ index][1]);
-        player.setY( birthConfig[camp-1][ index][2]);
+        player.setZ( birthConfig[camp-1][ index][2]);
         player.setEx(birthConfig[camp-1][ index][3]);
         player.setEy(birthConfig[camp-1][ index][4]);
         player.setEz(birthConfig[camp-1][ index][5]);

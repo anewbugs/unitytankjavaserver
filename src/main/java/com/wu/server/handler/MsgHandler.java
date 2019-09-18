@@ -251,5 +251,97 @@ public class MsgHandler {
     MsgPong msgPong = new MsgPong();
     ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), msgPong));
 }
+/***************************************************战斗管理*************************************************************/
+/***********************************************************************************************************************/
 
+//同步位置协议
+public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
+    MsgSyncTank msg = (MsgSyncTank)msgBase;
+    Player player =ConnectionService.GetPlayer(ctx);
+    if(player == null) return;
+    //room
+    Room room = RoomService.GetRoom(player.getRoomId());
+    if(room == null){
+        return;
+    }
+    //status
+    if(room.status != Status.FIGHT){
+        return;
+    }
+//    //是否作弊
+//    if(Math.Abs(player.x - msg.x) > 5 ||
+//            Math.Abs(player.y - msg.y) > 5 ||
+//            Math.Abs(player.z - msg.z) > 5){
+//        System.out.println("疑似作弊 " + player.id);
+//    }
+    //更新信息
+    player.setX(msg.x);
+    player.setY(msg.y);
+    player.setZ(msg.z);
+    player.setEx(msg.ex);
+    player.setEy(msg.ey);
+    player.setEz(msg.ez);
+
+//    player.x = msg.x;
+//    player.y = msg.y;
+//    player.z = msg.z;
+//    player.ex = msg.ex;
+//    player.ey = msg.ey;
+//    player.ez = msg.ez;
+    //广播
+    msg.id = player.getId();
+    room.Broadcast(msg);
+}
+
+    //开火协议
+    public static void MsgFire(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgFire msg = (MsgFire)msgBase;
+        Player player =ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        //room
+        Room room = RoomService.GetRoom(player.getRoomId());
+        if(room == null){
+            return;
+        }
+        //status
+        if(room.status != Status.FIGHT){
+            return;
+        }
+        //广播
+        msg.id = player.getId();
+        room.Broadcast(msg);
+    }
+
+    //击中协议
+    public static void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
+        MsgHit msg = (MsgHit)msgBase;
+        Player player = ConnectionService.GetPlayer(ctx);
+        if(player == null) return;
+        //targetPlayer
+        Player targetPlayer = PlayerService.GetPlayer(msg.targetId);
+        if(targetPlayer == null){
+            return;
+        }
+        //room
+        Room room = RoomService.GetRoom(player.getRoomId());
+        if(room == null){
+            return;
+        }
+        //status
+        if(room.status != Status.FIGHT){
+            return;
+        }
+        //发送者校验
+        if(player.getId() != msg.id){
+            return;
+        }
+        //状态
+        int damage = 35;
+        targetPlayer.setHp(targetPlayer.getHp() - damage);
+        //广播
+        msg.id = player.getId();
+        msg.hp = player.getHp();
+        msg.damage = damage;
+        room.Broadcast(msg);
+    }
 }

@@ -32,7 +32,7 @@ public class ConnectionHandler extends ConnectionChannelHandlerAdapter {
      * @throws Exception
      */
     public void close(ChannelHandlerContext ctx) throws Exception{
-            System.out.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+            System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
             //移除过期账户
             if(ConnectionService.GetPlayer(ctx) != null ){
                 PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
@@ -50,8 +50,7 @@ public class ConnectionHandler extends ConnectionChannelHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.out.println(new Date()+" ConnectionHandler exception:");
-        cause.printStackTrace();
+        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
         close(ctx);
     }
 }

@@ -34,9 +34,9 @@ public class MsgBase {
      */
     public static MsgBase Decode(Object msg){
         ByteBuf requestByteBuf = (ByteBuf)msg;
-        byte[] msgLengthBytes =new byte[1] ;
+        byte[] msgLengthBytes =new byte[2] ;
         requestByteBuf.readBytes(msgLengthBytes);
-        int msgLength = (int)msgLengthBytes[0];
+        int msgLength = (int)(((msgLengthBytes[0] << 8 ) & 0xff )|(msgLengthBytes[1] & 0xff));
         //解析协议名
         byte[] protoNameLengthBytes = new byte[1];
         requestByteBuf.readBytes(protoNameLengthBytes);
