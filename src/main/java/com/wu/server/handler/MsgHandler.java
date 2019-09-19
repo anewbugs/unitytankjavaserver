@@ -313,6 +313,7 @@ public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
     }
 
     //击中协议
+    //击中目标后判断游戏是否结束
     public static void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgHit msg = (MsgHit)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
@@ -332,7 +333,7 @@ public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
             return;
         }
         //发送者校验
-        if(player.getId() != msg.id){
+        if(!player.getId().equals(msg.id)){
             return;
         }
         //状态
@@ -343,5 +344,7 @@ public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
         msg.hp = player.getHp();
         msg.damage = damage;
         room.Broadcast(msg);
+       //目标死亡后判断整个游戏胜负
+             room.Update();
     }
 }

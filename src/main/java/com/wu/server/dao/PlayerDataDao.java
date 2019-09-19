@@ -1,6 +1,7 @@
 package com.wu.server.dao;
 
 import com.wu.server.Until.SqlUntil;
+import com.wu.server.bean.Player;
 import com.wu.server.bean.PlayerData;
 
 import java.sql.Connection;
@@ -62,6 +63,11 @@ public class PlayerDataDao {
         return null;
     }
 
+    /**
+     * 创建玩家数据
+     * @param iduser
+     * @return
+     */
     public static boolean CreatePlayer(String iduser) {
         Connection conn=null;
 
@@ -93,6 +99,51 @@ public class PlayerDataDao {
                 conn.close();
             } catch (SQLException e) {
                 // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+        }
+        return false;
+    }
+
+    /**
+     * 更新玩家数据
+     * @param player
+     * @return
+     */
+    public static boolean UpdatePlayerData(Player player) {
+        Connection conn=null;
+
+        try {
+
+            conn = SqlUntil.GetSqlConnect();
+            String sql="update player set coin = ?,text = ?,win = ?,lost= ?;where id = ?;";
+            if (conn != null) {
+                PreparedStatement preStmt=conn.prepareStatement(sql);
+                preStmt.setInt(1,player.getData().getCoin());
+                preStmt.setString(2,player.getData().getText());
+                preStmt.setInt(3,player.getData().getWin());
+                preStmt.setInt(4,player.getData().getLost());
+                preStmt.setString(5,player.getId());
+                //preStmt.setString(2, password);
+                int count =preStmt.executeUpdate();
+                preStmt.close();
+                if(count == 1)
+                    return  true;
+                else
+                    return false;
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+
+            try {
+
+                conn.close();
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
 

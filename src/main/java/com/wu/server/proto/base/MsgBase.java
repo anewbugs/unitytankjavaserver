@@ -48,6 +48,7 @@ public class MsgBase {
         byte[] jsonBytes = new byte[msgLength - protoNameLength - 1];
         requestByteBuf.readBytes(jsonBytes);
         MsgBase msgBase = MsgBase.DecodeMsg(protoName,jsonBytes);
+        requestByteBuf.release();
         return msgBase;
     }
 

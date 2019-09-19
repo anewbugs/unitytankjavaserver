@@ -35,8 +35,7 @@ public class ServerMain {
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
                     protected void initChannel(NioSocketChannel nioSocketChannel) {
-                        //超时控制handler
-                      //  nioSocketChannel.pipeline().addLast(new ReadTimeoutHandler(20));
+
                         //连接处理Handler
                         nioSocketChannel.pipeline().addLast(new ConnectionHandler());
                         //消息长度处里Handler
@@ -44,6 +43,8 @@ public class ServerMain {
                         nioSocketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024,0,2,0,0));
                         //数据封包处理Handler
                         nioSocketChannel.pipeline().addLast(new LengthFieldPrepender(2));
+                        //超时控制handler
+                        nioSocketChannel.pipeline().addLast(new ReadTimeoutHandler(10));
                         //消息服务处理Handler
                         //处理和回应各消息
                         nioSocketChannel.pipeline().addLast(new ServerHandle());

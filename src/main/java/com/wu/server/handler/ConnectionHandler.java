@@ -1,8 +1,12 @@
 package com.wu.server.handler;
 
+import com.wu.server.bean.Player;
+import com.wu.server.bean.Room;
+import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.handler.base.ConnectionChannelHandlerAdapter;
 import com.wu.server.service.ConnectionService;
 import com.wu.server.service.PlayerService;
+import com.wu.server.service.RoomService;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 
@@ -26,31 +30,4 @@ public class ConnectionHandler extends ConnectionChannelHandlerAdapter {
         ctx.fireChannelActive();
     }
 
-    /**
-     * 连接关闭处理
-     * @param ctx
-     * @throws Exception
-     */
-    public void close(ChannelHandlerContext ctx) throws Exception{
-            System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
-            //移除过期账户
-            if(ConnectionService.GetPlayer(ctx) != null ){
-                PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
-            }
-            ConnectionService.RemoveClientState(ctx);
-            ctx.close();
-
-    }
-
-    /**
-     * 连接异常捕获处理
-     * @param ctx
-     * @param cause
-     * @throws Exception
-     */
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
-        close(ctx);
-    }
 }

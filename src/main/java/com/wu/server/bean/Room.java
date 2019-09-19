@@ -37,9 +37,9 @@ public class Room {
         },
         //阵营2出生点
         {
-            { 5f, 0f, -10f,     0f, 180f,0f},//出生点1
-            { 0f, 0f, -10f,     0f, 180f,0f},//出生点2
-            {-5f, 0f, -10f,     0f, 180f,0f},//出生点3
+            { 5f, 0f, 30f,     0f, 0f,0f},//出生点1
+            { 0f, 0f, 30f,     0f, 0f,0f},//出生点2
+            {-5f, 0f, 30f,     0f, 0f,0f},//出生点3
         },
     };
     //上一次判断结果的时间
@@ -74,7 +74,7 @@ public class Room {
         player.setCamp(SwitchCamp());
         player.setRoomId( this.id);
         //设置房主
-        if(ownerId == ""){
+        if(ownerId.equals("") ){
             ownerId = player.getId();
         }
         //广播
@@ -104,7 +104,7 @@ public class Room {
 
     //是不是房主
     public boolean isOwner(Player player){
-        return player.getId() == ownerId;
+        return player.getId().equals(ownerId);
     }
 
     //删除玩家
@@ -126,7 +126,7 @@ public class Room {
         player.setCamp(0);
         player.setRoomId(-1);
         //设置房主
-        if(ownerId == player.getId()){
+        if(ownerId.equals(player.getId()) ){
             ownerId = SwitchOwner();
         }
         //战斗状态退出

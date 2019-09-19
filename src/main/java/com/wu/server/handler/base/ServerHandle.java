@@ -1,12 +1,19 @@
 package com.wu.server.handler.base;
 
+import com.wu.server.bean.Player;
+import com.wu.server.bean.Room;
+import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.proto.base.MsgBase;
+import com.wu.server.service.ConnectionService;
+import com.wu.server.service.PlayerService;
+import com.wu.server.service.RoomService;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Date;
 
 public class ServerHandle extends ChannelInboundHandlerAdapter {
 
@@ -36,6 +43,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
             clazz = Class.forName("com.wu.server.handler.MsgHandler");
             Method method =clazz.getMethod(msgBase.protoName,ChannelHandlerContext.class,MsgBase.class);
             method.invoke(null, ctx,msgBase);
+
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
@@ -65,5 +73,43 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 //        ctx.channel().writeAndFlush(byteBuf);
 
 
+    }
+
+    /**
+     * 连接关闭处理
+     * @param ctx
+     * @throws Exception
+     */
+    public void close(ChannelHandlerContext ctx) throws Exception{
+        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+        Player player = ConnectionService.GetPlayer(ctx);
+        //移除过期账户
+        //下线
+        if(player != null ){
+            if(player.getRoomId() >= 0){
+                Room room = RoomService.GetRoom(player.getRoomId());
+                room.RemovePlayer(player.getId());
+            }
+            //保存数据
+            PlayerDataDao.UpdatePlayerData(player);
+            //移除登录信息
+            PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
+        }
+        //移除连接信息
+        ConnectionService.RemoveClientState(ctx);
+        ctx.close();
+
+    }
+
+    /**
+     * 连接异常捕获处理
+     * @param ctx
+     * @param cause
+     * @throws Exception
+     */
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
+        close(ctx);
     }
 }
