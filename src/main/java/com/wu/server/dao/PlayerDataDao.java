@@ -117,7 +117,7 @@ public class PlayerDataDao {
         try {
 
             conn = SqlUntil.GetSqlConnect();
-            String sql="update player set coin = ?,text = ?,win = ?,lost= ?;where id = ?;";
+            String sql="update playerdata set coin = ?,text = ?,win = ?,lost= ? where iduser = ?;";
             if (conn != null) {
                 PreparedStatement preStmt=conn.prepareStatement(sql);
                 preStmt.setInt(1,player.getData().getCoin());
@@ -125,6 +125,7 @@ public class PlayerDataDao {
                 preStmt.setInt(3,player.getData().getWin());
                 preStmt.setInt(4,player.getData().getLost());
                 preStmt.setString(5,player.getId());
+                System.out.println(preStmt.toString());
                 //preStmt.setString(2, password);
                 int count =preStmt.executeUpdate();
                 preStmt.close();

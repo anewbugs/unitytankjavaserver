@@ -47,32 +47,6 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
-
-
-//
-//        byte[] jsonbytes = new byte[l - l2 - 1];
-//
-//        requestByteBuf.readBytes(jsonbytes);
-//        System.out.println(new String(jsonbytes));
-//        JSONObject js = (JSONObject) JSONObject.parse(jsonbytes);
-//
-//        //MsgBase jb = (MsgBaseLogin)JSONObject.toJavaObject(js,MsgBaseLogin.class );
-//        MsgBase jb  = MsgBase.Decode(new String(msgName),jsonbytes);
-//        //System.out.println("id="+jb.id+ ",mname= "+jb.protoName+",paseword =" +jb.pw+",result="+ jb.result);
-//        JSONObject json = (JSONObject) JSONObject.toJSON(jb);
-//        System.out.println(json.toJSONString());
-//        System.out.println("-----------------------------------------------");
-//        //System.out.println(js.get("id"));
-//        js.put("result",0);
-//
-//
-//        ByteBuf byteBuf = ctx.alloc().ioBuffer();
-//        byteBuf.writeBytes(b);
-//        byteBuf.writeBytes(msgName);
-//        byteBuf.writeBytes(js.toJSONString().getBytes());
-//        ctx.channel().writeAndFlush(byteBuf);
-
-
     }
 
     /**
@@ -81,7 +55,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
      * @throws Exception
      */
     public void close(ChannelHandlerContext ctx) throws Exception{
-        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+
         Player player = ConnectionService.GetPlayer(ctx);
         //移除过期账户
         //下线
@@ -110,6 +84,12 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
+        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+        close(ctx);
+    }
+
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        System.err.println(new Date()+" ConnectionHandler 客户端程序关闭:"+ctx);
         close(ctx);
     }
 }
