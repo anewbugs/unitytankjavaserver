@@ -12,6 +12,8 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 
+
+
 /**
  * @author wu
  * @see ServerMain
@@ -36,9 +38,9 @@ public class ServerMain {
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS,3000)
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
-                    protected void initChannel(NioSocketChannel nioSocketChannel) {
 
-                        //连接处理Handler
+                        protected void initChannel(NioSocketChannel nioSocketChannel) {
+                            //连接处理Handler
                         nioSocketChannel.pipeline().addLast(new ConnectionHandler());
                         //消息长度处里Handler
                         //解决半包和粘包问题
@@ -58,6 +60,7 @@ public class ServerMain {
 
     }
     private static void bind(final ServerBootstrap serverBootstrap, final int port) {
+
         serverBootstrap.bind(port).addListener(future -> {
             if (future.isSuccess()) {
                 System.out.println("端口[" + port + "]绑定成功!");
