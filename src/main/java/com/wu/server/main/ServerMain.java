@@ -1,4 +1,4 @@
-package com.wu.server;
+package com.wu.server.main;
 
 import com.wu.server.handler.ConnectionHandler;
 import com.wu.server.handler.base.ServerHandle;

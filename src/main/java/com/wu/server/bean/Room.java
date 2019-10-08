@@ -13,7 +13,7 @@ import com.wu.server.service.RoomService;
 import java.util.Date;
 import java.util.HashMap;
 
-public class Room {
+public  class Room {
     //id
     public int id = 0;
     //最大玩家数
