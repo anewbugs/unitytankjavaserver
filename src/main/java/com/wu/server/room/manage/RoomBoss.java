@@ -8,11 +8,12 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 
-public class RoomWorkerManage implements Runnable {
+public class RoomBoss implements Runnable {
     //
+
     private ExecutorService exec;
     //消息队列
-    private MsgLine msgs;
+    private MsgLine msg = new MsgLine(50);
     //工作中线程
     private PriorityQueue<RoomWorker> workingRoomWorker = new PriorityQueue<>();
     //闲置线程
@@ -22,12 +23,12 @@ public class RoomWorkerManage implements Runnable {
 
     /**
      * @param exec
-     * @param msgs
+     * @param msg
      * @param adjustmentPeriod
      */
-    public RoomWorkerManage(ExecutorService exec, MsgLine msgs, int adjustmentPeriod) {
+    public RoomBoss(ExecutorService exec, MsgLine msg, int adjustmentPeriod) {
         this.exec = exec;
-        this.msgs = msgs;
+        this.msg = msg;
         this.adjustmentPeriod = adjustmentPeriod;
     }
 

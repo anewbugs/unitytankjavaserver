@@ -18,11 +18,11 @@ public class PlayerData {
         return text;
     }
 
-    public int getWin() {
+    public synchronized int getWin() {
         return win;
     }
 
-    public int getLost() {
+    public synchronized int getLost() {
         return lost;
     }
 
@@ -34,11 +34,11 @@ public class PlayerData {
         this.text = text;
     }
 
-    public void setWin(int win) {
+    public synchronized void setWin(int win) {
         this.win = win;
     }
 
-    public void setLost(int lost) {
+    public synchronized void setLost(int lost) {
         this.lost = lost;
     }
 }

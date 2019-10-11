@@ -25,6 +25,7 @@ public class RoomService {
 
     //删除房间
     public static boolean RemoveRoom(int id)
+
     {
         rooms.remove(id);
         return true;

@@ -130,6 +130,8 @@ public  class Room {
             ownerId = SwitchOwner();
         }
         //战斗状态退出
+        /***待更改***/
+        /*更改为ai控制*/
         if(status == Status.FIGHT){
             player.getData().setLost(player.getData().getLost() + 1);
             MsgLeaveBattle msg = new MsgLeaveBattle();

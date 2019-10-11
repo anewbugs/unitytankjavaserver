@@ -2,12 +2,15 @@ package com.wu.server.handler.base;
 
 import com.wu.server.bean.Player;
 import com.wu.server.bean.Room;
+import com.wu.server.bean.Status;
+import com.wu.server.bean.User;
 import com.wu.server.dao.PlayerDataDao;
+import com.wu.server.proto.MsgLeaveRoom;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.service.ConnectionService;
 import com.wu.server.service.PlayerService;
 import com.wu.server.service.RoomService;
-import io.netty.buffer.ByteBuf;
+import com.wu.server.status.OnLine;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
@@ -16,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Date;
 
 public class ServerHandle extends ChannelInboundHandlerAdapter {
+
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
@@ -56,22 +60,34 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
      */
     public void close(ChannelHandlerContext ctx) throws Exception{
 
-        Player player = ConnectionService.GetPlayer(ctx);
-        //移除过期账户
-        //下线
-        if(player != null ){
-            if(player.getRoomId() >= 0){
-                Room room = RoomService.GetRoom(player.getRoomId());
-                room.RemovePlayer(player.getId());
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        //移除过期账户
+//        //下线
+//        if(player != null ){
+//            if(player.getRoomId() >= 0){
+//                Room room = RoomService.GetRoom(player.getRoomId());
+//                room.RemovePlayer(player.getId());
+//            }
+//            //保存数据
+//            PlayerDataDao.UpdatePlayerData(player);
+//            //移除登录信息
+//            PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
+//        }
+//        //移除连接信息
+//        ConnectionService.RemoveClientState(ctx);
+//        ctx.close();
+        //数据保存改为工作线程做
+        User user = OnLine.INSTANCE.onLineUser.get(ctx);
+        if(user != null){
+            if(user.roomId >= 0){
+                if(user.status == Status.PREPARE){
+                    //发个消息给房间表示玩家离线
+                    MsgLeaveRoom msgBase = new MsgLeaveRoom();
+                    msgBase.id = user.getId();
+
+                }
             }
-            //保存数据
-            PlayerDataDao.UpdatePlayerData(player);
-            //移除登录信息
-            PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
         }
-        //移除连接信息
-        ConnectionService.RemoveClientState(ctx);
-        ctx.close();
 
     }
 

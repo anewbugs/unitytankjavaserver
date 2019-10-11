@@ -1,9 +1,12 @@
-package com.wu.server.main;
+package com.wu.server.netty;
 
 import com.wu.server.handler.ConnectionHandler;
 import com.wu.server.handler.base.ServerHandle;
+import com.wu.server.room.manage.RoomBoss;
+import com.wu.server.room.material.MsgLine;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -11,17 +14,15 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
-/**
- * @author wu
- * @see ServerMain
- * nettyServer
- */
-public class ServerMain {
-    //端口
+public class NetServer implements Runnable {
+    private MsgLine msgLine;
 
-    private static final int PORT = 8000;
+    public NetServer(MsgLine msgLine) {
+        this.msgLine = msgLine;
+    }
 
-    public static void main(String[] args) {
+    @Override
+    public void run() {
         int a = 10;
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boosGroup = new NioEventLoopGroup();
@@ -37,8 +38,8 @@ public class ServerMain {
                 .childHandler(new ChannelInitializer<NioSocketChannel>() {
 
 
-                        protected void initChannel(NioSocketChannel nioSocketChannel) {
-                            //连接处理Handler
+                    protected void initChannel(NioSocketChannel nioSocketChannel) {
+                        //连接处理Handler
                         nioSocketChannel.pipeline().addLast(new ConnectionHandler());
                         //消息长度处里Handler
                         //解决半包和粘包问题
@@ -55,8 +56,8 @@ public class ServerMain {
                     }
                 });
         bind(serverBootstrap,8000);
-
     }
+
     private static void bind(final ServerBootstrap serverBootstrap, final int port) {
 
         serverBootstrap.bind(port).addListener(future -> {

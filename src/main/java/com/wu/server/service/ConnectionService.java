@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.HashMap;
 import java.util.Map;
-
+//准备抛弃
 public class ConnectionService {
     public static HashMap<ChannelHandlerContext, Player> clientState = new HashMap<>();
     public static Player GetPlayer(ChannelHandlerContext ctx) {
@@ -22,6 +22,7 @@ public class ConnectionService {
      */
     public static void  AddClientState(ChannelHandlerContext ctx,Player player){
         clientState.put(ctx,player);
+
     }
 
     /**

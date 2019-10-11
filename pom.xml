@@ -45,6 +45,7 @@
     <properties>
         <netty-all.version>4.1.6.Final</netty-all.version>
         <json-fast.version>1.2.32</json-fast.version>
+        <slf4j.version>1.7.25</slf4j.version>
     </properties>
     <dependencies>
         <!--netty环境配置 -->
@@ -66,6 +67,20 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.17</version>
         </dependency>
+
+        <!-- logger4-->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
 
     </dependencies>
 
