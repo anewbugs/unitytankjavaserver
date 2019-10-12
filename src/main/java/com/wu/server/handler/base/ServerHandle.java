@@ -1,23 +1,16 @@
 package com.wu.server.handler.base;
 
-import com.wu.server.bean.Player;
-import com.wu.server.bean.Room;
+import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
-import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.proto.MsgLeaveRoom;
 import com.wu.server.proto.base.MsgBase;
-import com.wu.server.service.ConnectionService;
-import com.wu.server.service.PlayerService;
-import com.wu.server.service.RoomService;
-import com.wu.server.status.OnLine;
+import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-
 public class ServerHandle extends ChannelInboundHandlerAdapter {
 
 
@@ -77,14 +70,20 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 //        ConnectionService.RemoveClientState(ctx);
 //        ctx.close();
         //数据保存改为工作线程做
-        User user = OnLine.INSTANCE.onLineUser.get(ctx);
+        /**
+         * 职能：
+         * 1.玩家不在房间中直接移除登入信息*
+         * 2.在房间但未开始游戏中伪装离开房间消息发给该工作线程，并移除玩家所有记录*
+         * 3.房间开始游戏，设置isuser为false，删除连接消息*
+         * */
+        User user = DataManage.INSTANCE.onLineUser.get(ctx);
         if(user != null){
             if(user.roomId >= 0){
                 if(user.status == Status.PREPARE){
                     //发个消息给房间表示玩家离线
                     MsgLeaveRoom msgBase = new MsgLeaveRoom();
                     msgBase.id = user.getId();
-
+                    //伪装离线消息发给工作线程
                 }
             }
         }
@@ -99,13 +98,15 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
-        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+//        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
+//        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+        LogUntil.logger.error("ConnectionHandler 连接超时:"+ctx);
         close(ctx);
     }
 
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.err.println(new Date()+" ConnectionHandler 客户端程序关闭:"+ctx);
+//        System.err.println(new Date()+" ConnectionHandler 客户端程序关闭:"+ctx);
+        LogUntil.logger.error("ConnectionHandler 客户端程序关闭:"+ctx);
         close(ctx);
     }
 }
