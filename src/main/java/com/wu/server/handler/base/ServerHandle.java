@@ -3,8 +3,10 @@ package com.wu.server.handler.base;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
+import com.wu.server.handler.MsgHandler;
 import com.wu.server.proto.MsgLeaveRoom;
 import com.wu.server.proto.base.MsgBase;
+import com.wu.server.proto.base.MsgName;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -16,34 +18,29 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
-//        System.out.println(ctx);
-//
-//        ByteBuf requestByteBuf = (ByteBuf) msg;
-//        //消息体长度
-//        byte[] msgLengthBytes =new byte[1] ;
-//        requestByteBuf.readBytes(msgLengthBytes);
-//        int msgLength = (int)msgLengthBytes[0];
-//        //解析协议名
-//        byte[] protoNameLengthBytes = new byte[1];
-//        requestByteBuf.readBytes(protoNameLengthBytes);
-//        int protoNameLength = (int)protoNameLengthBytes[0];
-//        byte[] protoNameBytes= new byte[protoNameLength];
-//        requestByteBuf.readBytes(protoNameBytes);
-//        String protoName = new String(protoNameBytes);
-//        //解析协议体
-//        byte[] jsonBytes = new byte[msgLength - protoNameLength - 1];
-//        requestByteBuf.readBytes(jsonBytes);
-        MsgBase msgBase = MsgBase.Decode(msg);
-        //分发消息
-        Class<?> clazz = null;
-        try {
-            clazz = Class.forName("com.wu.server.handler.MsgHandler");
-            Method method =clazz.getMethod(msgBase.protoName,ChannelHandlerContext.class,MsgBase.class);
-            method.invoke(null, ctx,msgBase);
 
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+
+        MsgBase msgBase = MsgBase.Decode(msg);
+        /**
+         * 只处理登入逻辑
+         * 其他逻辑分发给线程处理
+         */
+        //msg消息是MsgLogin
+        if(msgBase.protoName.equals(MsgName.Login.MSGLOGIN)){
+            MsgHandler.INSTANCE.MsgLogin(ctx,msgBase);
+        }else{
+
         }
+        //分发消息
+//        Class<?> clazz = null;
+//        try {
+//            clazz = Class.forName("com.wu.server.handler.MsgHandler");
+//            Method method =clazz.getMethod(msgBase.protoName,ChannelHandlerContext.class,MsgBase.class);
+//            method.invoke(null, ctx,msgBase);
+//
+//        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
     }
 
     /**

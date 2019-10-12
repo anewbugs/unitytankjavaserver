@@ -15,10 +15,10 @@ import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
 public class NetServer implements Runnable {
-    private MsgLine msgLine;
+    private RoomBoss roomBoss;
 
-    public NetServer(MsgLine msgLine) {
-        this.msgLine = msgLine;
+    public NetServer(RoomBoss roomBoss) {
+        this.roomBoss = roomBoss;
     }
 
     @Override

@@ -11,18 +11,26 @@ import io.netty.channel.ChannelHandlerContext;
  * 消息处理器
  * @author wu
  * @version 1.0
+ *
+ * modify {
+ *     content："原来都是静态方法处理改为单例模式"
+ *     time：2019 10 12 16:51
+ * }
  */
-public class MsgHandler {
 
+public class MsgHandler {
 
 /***************************************************登入注册*************************************************************/
 /***********************************************************************************************************************/
+    private MsgHandler() {
+    }
+    public static MsgHandler INSTANCE = new MsgHandler();
     /**
      * 登入协议处理
      * @param ctx
      * @param msgBase
      */
-    public static void MsgLogin(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgLogin(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgLogin msg = (MsgLogin) msgBase;
         //密码校验
         if (!PlayerService.CheckedPlayer(msg.id,msg.pw)){
@@ -70,7 +78,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgRegister(ChannelHandlerContext ctx,MsgBase msgBase){
+    public  void MsgRegister(ChannelHandlerContext ctx,MsgBase msgBase){
         MsgRegister msg = (MsgRegister)msgBase;
         //注册
         if(UserDao.Register(msg.id, msg.pw)){
@@ -92,7 +100,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgGetAchieve msg = (MsgGetAchieve)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -103,7 +111,7 @@ public class MsgHandler {
         ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
 
-    public static void MsgGetRoomList(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgGetRoomList(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgGetRoomList msg = (MsgGetRoomList)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -115,7 +123,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgCreateRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgCreateRoom(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgCreateRoom msg = (MsgCreateRoom)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -138,7 +146,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgEnterRoom(ChannelHandlerContext ctx,  MsgBase msgBase){
+    public  void MsgEnterRoom(ChannelHandlerContext ctx,  MsgBase msgBase){
         MsgEnterRoom msg = (MsgEnterRoom)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -170,7 +178,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgGetRoomInfo(ChannelHandlerContext ctx,   MsgBase msgBase){
+    public  void MsgGetRoomInfo(ChannelHandlerContext ctx,   MsgBase msgBase){
         MsgGetRoomInfo msg = (MsgGetRoomInfo)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -189,7 +197,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgLeaveRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgLeaveRoom(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgLeaveRoom msg = (MsgLeaveRoom)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -212,7 +220,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgStartBattle(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgStartBattle(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgStartBattle msg = (MsgStartBattle)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -246,7 +254,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public static void MsgPing(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgPing(ChannelHandlerContext ctx, MsgBase msgBase){
    // c.lastPingTime = NetManager.GetTimeStamp();
     MsgPong msgPong = new MsgPong();
     ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), msgPong));
@@ -255,7 +263,7 @@ public class MsgHandler {
 /***********************************************************************************************************************/
 
 //同步位置协议
-public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
+public  void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
     MsgSyncTank msg = (MsgSyncTank)msgBase;
     Player player =ConnectionService.GetPlayer(ctx);
     if(player == null) return;
@@ -294,7 +302,7 @@ public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
 }
 
     //开火协议
-    public static void MsgFire(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgFire(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgFire msg = (MsgFire)msgBase;
         Player player =ConnectionService.GetPlayer(ctx);
         if(player == null) return;
@@ -314,7 +322,7 @@ public static void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
 
     //击中协议
     //击中目标后判断游戏是否结束
-    public static void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
+    public  void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgHit msg = (MsgHit)msgBase;
         Player player = ConnectionService.GetPlayer(ctx);
         if(player == null) return;
