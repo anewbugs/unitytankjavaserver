@@ -1,4 +1,4 @@
-package com.wu.server.room.material;
+package com.wu.server.room.base;
 
 import com.wu.server.proto.base.MsgBase;
 

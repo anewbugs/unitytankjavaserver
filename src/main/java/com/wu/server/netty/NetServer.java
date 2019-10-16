@@ -1,9 +1,8 @@
 package com.wu.server.netty;
 
-import com.wu.server.handler.ConnectionHandler;
-import com.wu.server.handler.base.ServerHandle;
-import com.wu.server.room.manage.RoomBoss;
-import com.wu.server.room.material.MsgLine;
+import com.wu.server.Until.LogUntil;
+import com.wu.server.handler.*;
+import com.wu.server.room.manage.boss.RoomBoss;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -14,11 +13,28 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
-public class NetServer implements Runnable {
-    private RoomBoss roomBoss;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
-    public NetServer(RoomBoss roomBoss) {
-        this.roomBoss = roomBoss;
+public class NetServer implements Runnable {
+
+    //配置
+    /**************************************************/
+    //线程检查关闭时间
+    static int NETTY_SHUTDOWN_CHECKED_PERIOD = 100;
+    //服务器端口号
+    static final int NETTY_SERVER_PORT = 8000;
+    //解码配置
+    static final int MAX_FRAME_LENGTH = 1024;
+    static final int LENGTH_FIELD_OFFSET = 0;
+    static final int LENGTH_FIELD_LENGTH = 2;
+    static final int LENGTH_ADJUSTMENT = 0;
+    static final int INITIAL_BYTES_TO_STRIP = 0;
+    //超时配置
+    static final int CONNECTION_TIMEOUT_SECOND = 10;
+    /**************************************************/
+
+    public NetServer() {
     }
 
     @Override
@@ -40,22 +56,40 @@ public class NetServer implements Runnable {
 
                     protected void initChannel(NioSocketChannel nioSocketChannel) {
                         //连接处理Handler
-                        nioSocketChannel.pipeline().addLast(new ConnectionHandler());
-                        //消息长度处里Handler
-                        //解决半包和粘包问题
-                        nioSocketChannel.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024,0,2,0,0));
+                        nioSocketChannel.pipeline().addLast("ConnectionHandler",new ConnectionHandler());
+                        //消息长度处里Handler 解决半包和粘包问题
+                        nioSocketChannel.pipeline().addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP));
                         //数据封包处理Handler
-                        nioSocketChannel.pipeline().addLast(new LengthFieldPrepender(2));
+                        nioSocketChannel.pipeline().addLast("LengthFieldPrepender",new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
                         //超时控制handler
-                        nioSocketChannel.pipeline().addLast(new ReadTimeoutHandler(8));
+                        nioSocketChannel.pipeline().addLast("ReadTimeoutHandler" , new ReadTimeoutHandler(CONNECTION_TIMEOUT_SECOND));
                         //消息服务处理Handler
+                        /************************/
                         //处理和回应各消息
-                        nioSocketChannel.pipeline().addLast(new ServerHandle());
+                        //服务器断连
+                        nioSocketChannel.pipeline().addLast("ServerHandler" ,new ServerHandler());
+
+                        nioSocketChannel.pipeline().addLast("PingHandle", new PingHandle());
+                        nioSocketChannel.pipeline().addLast("LoginHandle" , new LoginHandle());
+                        nioSocketChannel.pipeline().addLast("RoomHandle" , new RoomHandle());
 
 
                     }
                 });
-        bind(serverBootstrap,8000);
+        bind(serverBootstrap,NETTY_SERVER_PORT);
+
+
+        while(!Thread.interrupted()){
+            try {
+                TimeUnit.MILLISECONDS.sleep(NETTY_SHUTDOWN_CHECKED_PERIOD);
+            } catch (InterruptedException e) {
+               LogUntil.logger.error(e.toString());
+               Thread.currentThread().interrupt();
+            }
+        }
+        LogUntil.logger.info("netty关闭");
+        boosGroup.shutdownGracefully();
+        workerGroup.shutdownGracefully();
     }
 
     private static void bind(final ServerBootstrap serverBootstrap, final int port) {

@@ -1,16 +1,19 @@
 package com.wu.server.handler;
 
 import com.wu.server.Until.LogUntil;
-import com.wu.server.handler.base.ConnectionChannelHandlerAdapter;
+import com.wu.server.bean.Status;
+import com.wu.server.bean.User;
+import com.wu.server.proto.MsgLeaveRoom;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 
 /**
  * 连接拦截器
  * @Authot wu
  * @version 1.0
  */
-public class ConnectionHandler extends ConnectionChannelHandlerAdapter {
+public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     /**
      * 新建连接处理
      * @param ctx
@@ -19,11 +22,11 @@ public class ConnectionHandler extends ConnectionChannelHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         LogUntil.logger.info(" ConnectionHandler 连接成功:"+ctx);
-        DataManage.INSTANCE.connection.put(ctx,null);
+        DataManage.INSTANCE.connection.put(ctx,"");
         ctx.fireChannelActive();
-//       System.out.println(new Date()+" ConnectionHandler 连接成功:"+ctx);
-//       ConnectionService.AddClientState(ctx,null);
-//       ctx.fireChannelActive();
+
     }
+
+
 
 }

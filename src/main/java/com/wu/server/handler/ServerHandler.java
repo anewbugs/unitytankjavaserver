@@ -1,48 +1,16 @@
-package com.wu.server.handler.base;
+package com.wu.server.handler;
 
 import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
-import com.wu.server.handler.MsgHandler;
 import com.wu.server.proto.MsgLeaveRoom;
-import com.wu.server.proto.base.MsgBase;
-import com.wu.server.proto.base.MsgName;
 import com.wu.server.status.DataManage;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Date;
-public class ServerHandle extends ChannelInboundHandlerAdapter {
+import io.netty.channel.ChannelOutboundHandlerAdapter;
+import io.netty.util.concurrent.EventExecutorGroup;
 
-
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-
-
-        MsgBase msgBase = MsgBase.Decode(msg);
-        /**
-         * 只处理登入逻辑
-         * 其他逻辑分发给线程处理
-         */
-        //msg消息是MsgLogin
-        if(msgBase.protoName.equals(MsgName.Login.MSGLOGIN)){
-            MsgHandler.INSTANCE.MsgLogin(ctx,msgBase);
-        }else{
-
-        }
-        //分发消息
-//        Class<?> clazz = null;
-//        try {
-//            clazz = Class.forName("com.wu.server.handler.MsgHandler");
-//            Method method =clazz.getMethod(msgBase.protoName,ChannelHandlerContext.class,MsgBase.class);
-//            method.invoke(null, ctx,msgBase);
-//
-//        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-    }
-
+public class ServerHandler extends ChannelOutboundHandlerAdapter{
     /**
      * 连接关闭处理
      * @param ctx
@@ -97,7 +65,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 //        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
 //        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
-        LogUntil.logger.error("ConnectionHandler 连接超时:"+ctx);
+        LogUntil.logger.error("ConnectionHandler 连接超时:"+cause);
         close(ctx);
     }
 

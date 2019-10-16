@@ -1,10 +1,11 @@
-package com.wu.server.handler;
+package com.wu.server.handler.base;
 
 import com.wu.server.bean.*;
 import com.wu.server.dao.*;
 import com.wu.server.proto.*;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.service.*;
+import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -29,33 +30,35 @@ public class MsgHandler {
      * 登入协议处理
      * @param ctx
      * @param msgBase
+     *
      */
     public  void MsgLogin(ChannelHandlerContext ctx, MsgBase msgBase){
         MsgLogin msg = (MsgLogin) msgBase;
         //密码校验
-        if (!PlayerService.CheckedPlayer(msg.id,msg.pw)){
+        if (!UserDao.selectToLogin(msg.id,msg.pw)){
             msg.result = 1;
             //发送登入失败协议
             ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
             return;
         }
         //不允许再次登入
-        if(PlayerService.IsOnline(msg.id)){
-            msg.result=1;
-            //发送登入失败协议
-            ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
-            return ;
+        if(/*PlayerService.IsOnline(msg.id)*/ DataManage.INSTANCE.connection.containsValue(msg.id)){
+                msg.result=1;
+                //发送登入失败协议
+                ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+                return ;
         }
         //如果已经登陆，踢下线
-        if(PlayerService.IsOnline(msg.id)){
+        if( DataManage.INSTANCE.connection.containsValue(msg.id)){
             //发送踢下线协议
-            Player other = PlayerService.GetPlayer(msg.id);
+            User other = DataManage.INSTANCE.onLineUser.get(msg.id);
             MsgKick msgKick = new MsgKick();
             msgKick.reason = 0;
             other.getChannel().writeAndFlush(MsgBase.Encode(other.getChannel().alloc().ioBuffer(),msgKick));
             //断开连接
             other.getChannel().close();
         }
+
         //获取玩家数据
         PlayerData playerData = PlayerDataDao.GetPlayerData(msg.id);
         if(playerData == null){
@@ -63,12 +66,29 @@ public class MsgHandler {
             ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
             return;
         }
+        /*
         //构建Player
         Player player = new Player(ctx.channel());
         player.setId(msg.id);
         player.setData(playerData);
         PlayerService.AddPlayer(msg.id,player);
-       ConnectionService.clientState.put(ctx,player);
+        ConnectionService.clientState.put(ctx,player);
+        msg.result = 0;
+        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+         */
+        //判断玩家是否为掉线玩家
+        if(DataManage.INSTANCE.onLineUser.containsKey(msg.id)){
+
+            //将重连消息转发给线程
+        }else{
+            User user = new User(msg.id,ctx.channel());
+            user.playerData = playerData;
+            DataManage.INSTANCE.onLineUser.put(msg.id,user);
+            DataManage.INSTANCE.connection.put(ctx,msg.id);
+
+        }
+
+        //重连玩家也将该条消息
         msg.result = 0;
         ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
     }
@@ -254,7 +274,7 @@ public class MsgHandler {
      * @param ctx
      * @param msgBase
      */
-    public  void MsgPing(ChannelHandlerContext ctx, MsgBase msgBase){
+    public void MsgPing(ChannelHandlerContext ctx, MsgBase msgBase){
    // c.lastPingTime = NetManager.GetTimeStamp();
     MsgPong msgPong = new MsgPong();
     ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), msgPong));

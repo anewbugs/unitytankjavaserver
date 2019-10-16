@@ -1,7 +1,7 @@
 package com.wu.server.main;
 
 import com.wu.server.handler.ConnectionHandler;
-import com.wu.server.handler.base.ServerHandle;
+import com.wu.server.handler.PingHandle;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -49,7 +49,7 @@ public class ServerMain {
                         nioSocketChannel.pipeline().addLast(new ReadTimeoutHandler(8));
                         //消息服务处理Handler
                         //处理和回应各消息
-                        nioSocketChannel.pipeline().addLast(new ServerHandle());
+                        nioSocketChannel.pipeline().addLast(new PingHandle());
 
 
                     }
