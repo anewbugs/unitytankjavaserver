@@ -1,7 +1,7 @@
 package com.wu.server.service;
 
 import com.wu.server.bean.Room;
-import com.wu.server.proto.MsgGetRoomList;
+import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.RoomInfo;
 

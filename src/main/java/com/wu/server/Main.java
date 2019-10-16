@@ -18,8 +18,10 @@ public class Main {
     static final int WORKER_THREAD_INTI_NUMBER = 10;
     public static void main(String[] args) {
         ExecutorService exec = Executors.newCachedThreadPool();
+        //初始化
+        RoomBoss.init(exec,ADJUSTMENT_PERIOD);
         //RoomBoss线程跑起来
-        exec.execute(RoomBoss.getInstance(exec,ADJUSTMENT_PERIOD));
+        exec.execute(RoomBoss.getInstance());
         //通信线程跑起来
         exec.execute(new NetServer());
         //控制台结束程序

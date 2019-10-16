@@ -2,8 +2,10 @@ package com.wu.server.handler.base;
 
 import com.wu.server.bean.*;
 import com.wu.server.dao.*;
-import com.wu.server.proto.*;
+import com.wu.server.proto.net.*;
 import com.wu.server.proto.base.MsgBase;
+import com.wu.server.proto.system.MsgReconnect;
+import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.service.*;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
@@ -66,20 +68,24 @@ public class MsgHandler {
             ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
             return;
         }
-        /*
-        //构建Player
-        Player player = new Player(ctx.channel());
-        player.setId(msg.id);
-        player.setData(playerData);
-        PlayerService.AddPlayer(msg.id,player);
-        ConnectionService.clientState.put(ctx,player);
-        msg.result = 0;
-        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
-         */
+
         //判断玩家是否为掉线玩家
         if(DataManage.INSTANCE.onLineUser.containsKey(msg.id)){
-
-            //将重连消息转发给线程
+            User user = DataManage.INSTANCE.onLineUser.get(msg.id);
+            user.setChannel(ctx.channel());
+            user.playerData = playerData;
+            DataManage.INSTANCE.connection.put(ctx,msg.id);
+            /*将重连消息转发给线程*/
+            //重连消息
+            MsgReconnect msgReconnect = new MsgReconnect();
+            msgReconnect.id = msg.id;
+            //转发给房间工作线程
+            RoomBoss
+                    .getInstance()
+                    .findRoomWorker
+                    .get(user.roomId)
+                    .pendingMsg
+                    .add(msgReconnect);
         }else{
             User user = new User(msg.id,ctx.channel());
             user.playerData = playerData;

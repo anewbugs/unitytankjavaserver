@@ -1,5 +1,6 @@
 package com.wu.server.dao;
 
+import com.wu.server.Until.LogUntil;
 import com.wu.server.Until.SqlUntil;
 import com.wu.server.bean.Player;
 import com.wu.server.bean.PlayerData;
@@ -46,8 +47,7 @@ public class PlayerDataDao {
 
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LogUntil.logger.error(e.toString());
         } finally {
 
             try {
@@ -55,8 +55,7 @@ public class PlayerDataDao {
                 stmt.close();
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+              LogUntil.logger.error(e.toString());
             }
 
         }
@@ -89,8 +88,7 @@ public class PlayerDataDao {
 
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LogUntil.logger.error(e.toString());
             return false;
         } finally {
 
@@ -98,8 +96,7 @@ public class PlayerDataDao {
 
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LogUntil.logger.error(e.toString());
             }
 
         }
@@ -145,7 +142,7 @@ public class PlayerDataDao {
 
                 conn.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                LogUntil.logger.error(e.toString());
             }
 
         }

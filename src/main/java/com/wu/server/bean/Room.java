@@ -1,9 +1,9 @@
 package com.wu.server.bean;
 
-import com.wu.server.proto.MsgBattleResult;
-import com.wu.server.proto.MsgEnterBattle;
-import com.wu.server.proto.MsgGetRoomInfo;
-import com.wu.server.proto.MsgLeaveBattle;
+import com.wu.server.proto.net.MsgBattleResult;
+import com.wu.server.proto.net.MsgEnterBattle;
+import com.wu.server.proto.net.MsgGetRoomInfo;
+import com.wu.server.proto.net.MsgLeaveBattle;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.PlayerInfo;
 import com.wu.server.proto.base.TankInfo;

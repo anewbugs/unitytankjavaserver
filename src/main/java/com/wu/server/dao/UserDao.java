@@ -1,5 +1,6 @@
 package com.wu.server.dao;
 
+import com.wu.server.Until.LogUntil;
 import com.wu.server.Until.SqlUntil;
 
 import java.sql.*;
@@ -33,8 +34,7 @@ public class UserDao {
 
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LogUntil.logger.error(e.toString());
         } finally {
 
             try {
@@ -42,8 +42,7 @@ public class UserDao {
                 stmt.close();
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LogUntil.logger.error(e.toString());
             }
 
         }
@@ -75,8 +74,7 @@ public class UserDao {
             }
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LogUntil.logger.error(e.toString());
         } finally {
 
             try {
@@ -84,8 +82,7 @@ public class UserDao {
                 stmt.close();
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LogUntil.logger.error(e.toString());
             }
 
         }
@@ -120,8 +117,7 @@ public class UserDao {
 
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LogUntil.logger.error(e.toString());
             return false;
         } finally {
 
@@ -129,8 +125,7 @@ public class UserDao {
 
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                LogUntil.logger.error(e.toString());
             }
 
         }

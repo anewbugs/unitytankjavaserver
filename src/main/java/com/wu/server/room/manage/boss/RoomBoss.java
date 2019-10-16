@@ -2,6 +2,7 @@ package com.wu.server.room.manage.boss;
 
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.manage.work.RoomWorker;
+import javafx.concurrent.Worker;
 
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -14,7 +15,8 @@ public class RoomBoss implements Runnable {
    //配置
     /**********************************************************************/
     //消息处理最大量
-    private static final int THREAD_MSG_MAX = 10;
+    static final int THREAD_MSG_MAX = 10;
+    static final int WORKER_NUMBER =10;
     /**********************************************************************/
 
 
@@ -31,10 +33,10 @@ public class RoomBoss implements Runnable {
     //房间和其注册的线程key:roomId,value:RoomWorker
     public ConcurrentHashMap<Integer, RoomWorker> findRoomWorker = new ConcurrentHashMap<>();
     private static RoomBoss roomBoss;
-    public static RoomBoss getInstance(ExecutorService exec, int adjustmentPeriod) {
-        if(roomBoss == null){
+    public static void init(ExecutorService exec, int adjustmentPeriod) {
             roomBoss = new RoomBoss(exec,adjustmentPeriod);
-        }
+    }
+    public static RoomBoss getInstance(){
         return roomBoss;
     }
 
@@ -63,5 +65,9 @@ public class RoomBoss implements Runnable {
     }
 
     private void init() {
+
+        for (int i = 0 ;i < WORKER_NUMBER ;i++){
+            exec.execute(new RoomWorker());
+        }
     }
 }

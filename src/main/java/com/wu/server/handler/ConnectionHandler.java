@@ -1,9 +1,6 @@
 package com.wu.server.handler;
 
 import com.wu.server.Until.LogUntil;
-import com.wu.server.bean.Status;
-import com.wu.server.bean.User;
-import com.wu.server.proto.MsgLeaveRoom;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;

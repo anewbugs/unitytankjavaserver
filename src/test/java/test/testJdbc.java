@@ -30,7 +30,7 @@ public class testJdbc {
 //
 //
 //        } catch (SQLException e) {
-//            // TODO Auto-generated catch block
+//            LogUntil.logger.error(e.toString());
 //            e.printStackTrace();
 //        } catch (ClassNotFoundException e) {
 //            e.printStackTrace();

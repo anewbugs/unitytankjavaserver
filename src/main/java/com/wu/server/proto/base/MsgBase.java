@@ -1,12 +1,9 @@
 package com.wu.server.proto.base;
 
 import com.alibaba.fastjson.JSONObject;
-import com.wu.server.proto.MsgLogin;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 
 import java.util.Date;
-import java.util.HashMap;
 
 /**
  * 消息类基类

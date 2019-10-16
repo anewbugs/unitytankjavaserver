@@ -10,6 +10,7 @@ public class MsgName {
         public static final String MSG_REGISTER = "MsgRegister";
         public static final String MSG_LOGIN = "MsgLogin";
         public static final String MSG_KICK = "MsgKick";
+        public static final String MSG_RECONNECT = "MsgReconnect";
     }
     public static final class Notepad {
         public static final String MSG_GET_TEXT = "MsgGetText";

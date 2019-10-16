@@ -5,7 +5,6 @@ import com.wu.server.bean.Room;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.room.base.MsgLine;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 
 public class RoomWorker implements Runnable {
@@ -24,7 +23,10 @@ public class RoomWorker implements Runnable {
     private HashMap<Integer, Room> room = new HashMap<>(THREAD_WORKING_ROOM_MAX);
     //管理房间数目
     private volatile int manageRoomNumber = 0;
-    Method method;
+
+    public RoomWorker() {
+    }
+
     @Override
     public void run() {
         while (!Thread.interrupted()){

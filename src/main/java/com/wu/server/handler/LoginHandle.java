@@ -5,8 +5,6 @@ import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelOutboundHandler;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
 
 /**
  * @author wu

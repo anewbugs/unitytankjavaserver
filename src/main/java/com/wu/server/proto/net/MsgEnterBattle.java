@@ -1,4 +1,4 @@
-package com.wu.server.proto;
+package com.wu.server.proto.net;
 
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.TankInfo;

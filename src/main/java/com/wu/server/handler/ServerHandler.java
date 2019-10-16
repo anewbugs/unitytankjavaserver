@@ -3,12 +3,12 @@ package com.wu.server.handler;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
-import com.wu.server.proto.MsgLeaveRoom;
+import com.wu.server.proto.net.MsgLeaveRoom;
+import com.wu.server.proto.system.MsgOffline;
+import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.status.DataManage;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.util.concurrent.EventExecutorGroup;
 
 public class ServerHandler extends ChannelOutboundHandlerAdapter{
     /**
@@ -37,22 +37,27 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
         //数据保存改为工作线程做
         /**
          * 职能：
-         * 1.玩家不在房间中直接移除登入信息*
-         * 2.在房间但未开始游戏中伪装离开房间消息发给该工作线程，并移除玩家所有记录*
-         * 3.房间开始游戏，设置isuser为false，删除连接消息*
+         * 1.玩家不在房间中直接移除登入信息
+         * 2.在房间但未开始游戏中伪装离开房间消息发给该工作线程，并移除玩家所有记录
+         * 3.房间开始游戏，设置isuser为false，删除连接消息
+         * 4.游戏结束让线程保存数据* TODO
          * */
         User user = DataManage.INSTANCE.onLineUser.get(ctx);
+        user.setChannel(null);
         if(user != null){
             if(user.roomId >= 0){
-                if(user.status == Status.PREPARE){
-                    //发个消息给房间表示玩家离线
-                    MsgLeaveRoom msgBase = new MsgLeaveRoom();
-                    msgBase.id = user.getId();
+                    //离线消息
+                    MsgOffline msgOffline = new MsgOffline();
+                    msgOffline.id = user.getId();
                     //伪装离线消息发给工作线程
-                }
+                    RoomBoss.getInstance().findRoomWorker.get(user.roomId).pendingMsg.add(msgOffline);
+            }else{
+                //移除登入消息
+                DataManage.INSTANCE.onLineUser.remove(user.getId());
             }
         }
-
+        DataManage.INSTANCE.connection.remove(user.getId());
+        ctx.close();
     }
 
     /**
@@ -65,7 +70,7 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
 //        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
 //        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
-        LogUntil.logger.error("ConnectionHandler 连接超时:"+cause);
+        LogUntil.logger.warn("ConnectionHandler 连接超时:"+cause);
         close(ctx);
     }
 
