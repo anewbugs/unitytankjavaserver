@@ -22,7 +22,7 @@ public class RoomBoss implements Runnable {
 
     private ExecutorService exec;
     //消息队列
-    public MsgLine msg = new MsgLine(THREAD_MSG_MAX);
+    public MsgLine msgPending = new MsgLine(THREAD_MSG_MAX);
     //工作中线程
     private PriorityQueue<RoomWorker> workingRoomWorker = new PriorityQueue<>();
     //闲置线程

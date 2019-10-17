@@ -1,8 +1,7 @@
 package com.wu.server.netty;
 
 import com.wu.server.Until.LogUntil;
-import com.wu.server.handler.*;
-import com.wu.server.room.manage.boss.RoomBoss;
+import com.wu.server.netty.handler.*;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -13,7 +12,6 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 
-import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 public class NetServer implements Runnable {
@@ -63,14 +61,13 @@ public class NetServer implements Runnable {
                         nioSocketChannel.pipeline().addLast("LengthFieldPrepender",new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
                         //超时控制handler
                         nioSocketChannel.pipeline().addLast("ReadTimeoutHandler" , new ReadTimeoutHandler(CONNECTION_TIMEOUT_SECOND));
-                        //消息服务处理Handler
-                        /************************/
-                        //处理和回应各消息
                         //服务器断连
                         nioSocketChannel.pipeline().addLast("ServerHandler" ,new ServerHandler());
-
+                        //Ping消息回应
                         nioSocketChannel.pipeline().addLast("PingHandle", new PingHandle());
+                        //登入消息处理
                         nioSocketChannel.pipeline().addLast("LoginHandle" , new LoginHandle());
+                       //房间消息管理
                         nioSocketChannel.pipeline().addLast("RoomHandle" , new RoomHandle());
 
 

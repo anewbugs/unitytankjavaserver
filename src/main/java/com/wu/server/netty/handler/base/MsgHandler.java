@@ -1,4 +1,4 @@
-package com.wu.server.handler.base;
+package com.wu.server.netty.handler.base;
 
 import com.wu.server.bean.*;
 import com.wu.server.dao.*;
@@ -79,7 +79,7 @@ public class MsgHandler {
             //重连消息
             MsgReconnect msgReconnect = new MsgReconnect();
             msgReconnect.id = msg.id;
-            //转发给房间工作线程
+            //转发给房间工作线程  todo worker线程处理该消息
             RoomBoss
                     .getInstance()
                     .findRoomWorker
@@ -290,6 +290,7 @@ public class MsgHandler {
 
 //同步位置协议
 public  void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
+    System.out.println(msgBase.getClass());
     MsgSyncTank msg = (MsgSyncTank)msgBase;
     Player player =ConnectionService.GetPlayer(ctx);
     if(player == null) return;

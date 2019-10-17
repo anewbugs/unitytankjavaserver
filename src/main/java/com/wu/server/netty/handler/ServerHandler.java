@@ -1,9 +1,7 @@
-package com.wu.server.handler;
+package com.wu.server.netty.handler;
 
 import com.wu.server.Until.LogUntil;
-import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
-import com.wu.server.proto.net.MsgLeaveRoom;
 import com.wu.server.proto.system.MsgOffline;
 import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.status.DataManage;
@@ -49,7 +47,7 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
                     //离线消息
                     MsgOffline msgOffline = new MsgOffline();
                     msgOffline.id = user.getId();
-                    //伪装离线消息发给工作线程
+                    //伪装离线消息发给工作线程  TODO 由工作线程去标记离线玩家
                     RoomBoss.getInstance().findRoomWorker.get(user.roomId).pendingMsg.add(msgOffline);
             }else{
                 //移除登入消息
@@ -68,14 +66,13 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-//        System.err.println(new Date()+" ConnectionHandler exception:"+cause.toString());
-//        System.err.println(new Date()+" ConnectionHandler 连接超时:"+ctx);
+        //捕获超时异常
         LogUntil.logger.warn("ConnectionHandler 连接超时:"+cause);
         close(ctx);
     }
 
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-//        System.err.println(new Date()+" ConnectionHandler 客户端程序关闭:"+ctx);
+        //检测用户断线
         LogUntil.logger.error("ConnectionHandler 客户端程序关闭:"+ctx);
         close(ctx);
     }

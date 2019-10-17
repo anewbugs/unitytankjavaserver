@@ -1,6 +1,6 @@
-package com.wu.server.handler;
+package com.wu.server.netty.handler;
 
-import com.wu.server.handler.base.MsgHandler;
+import com.wu.server.netty.handler.base.MsgHandler;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import io.netty.channel.ChannelHandlerContext;

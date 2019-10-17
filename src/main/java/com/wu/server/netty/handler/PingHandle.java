@@ -1,6 +1,6 @@
-package com.wu.server.handler;
+package com.wu.server.netty.handler;
 
-import com.wu.server.handler.base.MsgHandler;
+import com.wu.server.netty.handler.base.MsgHandler;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import io.netty.channel.ChannelHandlerContext;
@@ -20,8 +20,7 @@ public class PingHandle extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         //消息解码
         MsgBase msgBase = MsgBase.Decode(msg);
-        //msg消息是MsgLogin
-        //将消息分发给RoomBoss线程注册
+        //msg消息是MSG_PING 回复客户端
         if (msgBase.protoName.equals(MsgName.SysMsg.MSG_PING)) {
             MsgHandler.INSTANCE.MsgPing(ctx, msgBase);
         } else {

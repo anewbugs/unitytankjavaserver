@@ -1,7 +1,7 @@
 package com.wu.server.main;
 
-import com.wu.server.handler.ConnectionHandler;
-import com.wu.server.handler.PingHandle;
+import com.wu.server.netty.handler.ConnectionHandler;
+import com.wu.server.netty.handler.PingHandle;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
