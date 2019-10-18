@@ -1,7 +1,9 @@
 package com.wu.server.room.base;
 
-import com.wu.server.bean.Player;
+import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
+import com.wu.server.bean.User;
+import com.wu.server.netty.NetManage;
 import com.wu.server.proto.net.MsgBattleResult;
 import com.wu.server.proto.net.MsgEnterBattle;
 import com.wu.server.proto.net.MsgGetRoomInfo;
@@ -9,15 +11,22 @@ import com.wu.server.proto.net.MsgLeaveBattle;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.PlayerInfo;
 import com.wu.server.proto.base.TankInfo;
-import com.wu.server.service.PlayerService;
-import com.wu.server.service.RoomService;
+import com.wu.server.room.manage.work.RoomWorker;
+import com.wu.server.status.DataManage;
 
+import java.lang.reflect.Member;
 import java.util.Date;
 import java.util.HashMap;
 
 public class Room {
-    //id
-    public int id = 0;
+    public Room(int roomId ,String ownerId) {
+        this.roomId = roomId;
+        this.ownerId = ownerId;
+        AddPlayer(ownerId);
+    }
+
+    //房间id
+    public int roomId = 0;
     //最大玩家数
     public int maxPlayer = 6;
     //玩家列表
@@ -50,19 +59,19 @@ public class Room {
     //添加玩家
     public boolean AddPlayer(String id){
         //获取玩家
-        Player player = PlayerService.GetPlayer(id);
-        if(player == null){
-            System.out.println(new Date() +"Room AddPlayer: room.AddPlayer fail, player is null");
+        User user = DataManage.INSTANCE.onLineUser.get(id);
+        if(user == null){
+            LogUntil.logger.error("Room AddPlayer: room.AddPlayer fail, player is null");
             return false;
         }
         //房间人数
         if(playerIds.size() >= maxPlayer){
-            System.out.println(new Date() +"Room AddPlayer: room.AddPlayer fail, reach maxPlayer");
+            LogUntil.logger.error("Room AddPlayer: room.AddPlayer fail, reach maxPlayer");
             return false;
         }
         //准备状态才能加人
         if(status != Status.PREPARE){
-            System.out.println(new Date() +"Room AddPlayer: room.AddPlayer fail, not PREPARE");
+            LogUntil.logger.error("Room AddPlayer: room.AddPlayer fail, not PREPARE");
             return false;
         }
         //已经在房间里
@@ -71,13 +80,13 @@ public class Room {
             return false;
         }
         //加入列表
-       // playerIds.put(id,true);
+        playerIds.put(id,new RoomMember(SwitchCamp(),id));
         //设置玩家数据
-        player.setCamp(SwitchCamp());
-        player.setRoomId( this.id);
+       user.roomId = this.roomId;
+       //todo  player.setRoomId( this.id);
         //设置房主
         if(ownerId.equals("") ){
-            ownerId = player.getId();
+            ownerId = user.getId();
         }
         //广播
         Broadcast(ToMsg());
@@ -90,8 +99,8 @@ public class Room {
         int count1 = 0;
         int count2 = 0;
         for( String id : playerIds.keySet() ){
-            Player player = PlayerService.GetPlayer(id);
-            if(player.getCamp() == 1) {count1++;}
+            RoomMember player = playerIds.get(id);
+            if(player.getCamp()== 1) {count1++;}
             if(player.getCamp() == 2) {count2++;}
         }
 
@@ -105,49 +114,49 @@ public class Room {
     }
 
     //是不是房主
-    public boolean isOwner(Player player){
-        return player.getId().equals(ownerId);
+    public boolean isOwner(RoomMember roomMember){
+        return roomMember.getId().equals(ownerId);
     }
 
-    //删除玩家
-    public boolean RemovePlayer(String id) {
-        //获取玩家
-        Player player = PlayerService.GetPlayer(id);
-        if(player == null){
-            System.out.println( new Date() + "Room RemovePlayer: room.RemovePlayer fail, player is null");
-            return false;
-        }
-        //没有在房间里
-        if(!playerIds.containsKey(id)){
-            System.out.println( new Date() + "Room RemovePlayer: room.RemovePlayer fail, not in this room");
-            return false;
-        }
-        //删除列表
-        playerIds.remove(id);
-        //设置玩家数据
-        player.setCamp(0);
-        player.setRoomId(-1);
-        //设置房主
-        if(ownerId.equals(player.getId()) ){
-            ownerId = SwitchOwner();
-        }
-        //战斗状态退出
-        /***待更改***/
-        /*更改为ai控制*/
-        if(status == Status.FIGHT){
-            player.getData().setLost(player.getData().getLost() + 1);
-            MsgLeaveBattle msg = new MsgLeaveBattle();
-            msg.id = player.getId();
-            Broadcast(msg);
-        }
-        //房间为空
-        if(playerIds.size() == 0){
-            RoomService.RemoveRoom(this.id);
-        }
-        //广播
-        Broadcast(ToMsg());
-        return true;
-    }
+//    //删除玩家
+//    public boolean RemovePlayer(String id) {
+//        //获取玩家
+//         player = PlayerService.GetPlayer(id);
+//        if(player == null){
+//            System.out.println( new Date() + "Room RemovePlayer: room.RemovePlayer fail, player is null");
+//            return false;
+//        }
+//        //没有在房间里
+//        if(!playerIds.containsKey(id)){
+//            System.out.println( new Date() + "Room RemovePlayer: room.RemovePlayer fail, not in this room");
+//            return false;
+//        }
+//        //删除列表
+//        playerIds.remove(id);
+//        //设置玩家数据
+//        player.setCamp(0);
+//        player.setRoomId(-1);
+//        //设置房主
+//        if(ownerId.equals(player.getId()) ){
+//            ownerId = SwitchOwner();
+//        }
+//        //战斗状态退出
+//        /***待更改***/
+//        /*更改为ai控制*/
+//        if(status == Status.FIGHT){
+//            player.getData().setLost(player.getData().getLost() + 1);
+//            MsgLeaveBattle msg = new MsgLeaveBattle();
+//            msg.id = player.getId();
+//            Broadcast(msg);
+//        }
+//        //房间为空
+//        if(playerIds.size() == 0){
+//          //Todo  RoomService.RemoveRoom(this.id);
+//        }
+//        //广播
+//        Broadcast(ToMsg());
+//        return true;
+//    }
 
     //选择房主
     public String SwitchOwner() {
@@ -164,8 +173,7 @@ public class Room {
     //广播消息
     public void Broadcast(MsgBase msg){
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            player.send(msg);
+            NetManage.send(id,msg);
         }
     }
 
@@ -177,15 +185,16 @@ public class Room {
         //players
         int i = 0;
         for(String id : playerIds.keySet()){
-            Player player = PlayerService.GetPlayer(id);
+            RoomMember roomMember = playerIds.get(id);
             PlayerInfo playerInfo = new PlayerInfo();
+            User user = DataManage.INSTANCE.onLineUser.get(id);
             //赋值
-            playerInfo.id = player.getId();
-            playerInfo.camp = player.getCamp();
-            playerInfo.win = player.getData().getWin();
-            playerInfo.lost = player.getData().getLost();
+            playerInfo.id = roomMember.getId();
+            playerInfo.camp = roomMember.getCamp();
+            playerInfo.win = user.playerData.getWin();
+            playerInfo.lost = user.playerData.getLost();
             playerInfo.isOwner = 0;
-            if(isOwner(player)){
+            if(isOwner(roomMember)){
                 playerInfo.isOwner = 1;
             }
 
@@ -198,49 +207,51 @@ public class Room {
     //能否开战
     public boolean CanStartBattle() {
         //已经是战斗状态
-        if (status != Status.PREPARE){
-            return false;
-        }
-        //统计每个队伍的玩家数
-        int count1 = 0;
-        int count2 = 0;
-        for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            if(player.getCamp() == 1){ count1++; }
-            else { count2++; }
-        }
-        //每个队伍至少要有1名玩家
-        if (count1 < 1 || count2 < 1){
-            return false;
-        }
+//        if (status != Status.PREPARE){
+//            return false;
+//        }
+//        //统计每个队伍的玩家数
+//        int count1 = 0;
+//        int count2 = 0;
+//        for(String id : playerIds.keySet()) {
+//            Player player = PlayerService.GetPlayer(id);
+//            if(player.getCamp() == 1){ count1++; }
+//            else { count2++; }
+//        }
+//        //每个队伍至少要有1名玩家
+//        if (count1 < 1 || count2 < 1){
+//            return false;
+//        }
         return true;
     }
 
     //初始化位置
-    private void SetBirthPos(Player player, int index){
-        int camp = player.getCamp();
+    private void SetBirthPos(RoomMember roomMember, int index){
+        int camp = roomMember.getCamp();
+        roomMember.setPosition(
+                birthConfig[camp-1] [index][0],
+                birthConfig[camp-1][ index][1],
+                birthConfig[camp-1][ index][2],
+                birthConfig[camp-1][ index][3],
+                birthConfig[camp-1][ index][4],
+                birthConfig[camp-1][ index][5]);
 
-        player.setX( birthConfig[camp-1] [index][0]);
-        player.setY( birthConfig[camp-1][ index][1]);
-        player.setZ( birthConfig[camp-1][ index][2]);
-        player.setEx(birthConfig[camp-1][ index][3]);
-        player.setEy(birthConfig[camp-1][ index][4]);
-        player.setEz(birthConfig[camp-1][ index][5]);
+
     }
 
     //玩家数据转成TankInfo
-    public TankInfo PlayerToTankInfo(Player player){
-        TankInfo tankInfo = new TankInfo();
-        tankInfo.camp = player.getCamp();
-        tankInfo.id = player.getId();
-        tankInfo.hp = player.getHp();
+    public TankInfo PlayerToTankInfo(RoomMember roomMember){
+        TankInfo tankInfo = new TankInfo(
+                roomMember.getId(),
+                roomMember.getCamp(),
+                roomMember.getHp(),
+                roomMember.getX(),
+                roomMember.getY(),
+                roomMember.getZ(),
+                roomMember.getEx(),
+                roomMember.getEy(),
+                roomMember.getEz());
 
-        tankInfo.x  = player.getX();
-        tankInfo.y  = player.getY();
-        tankInfo.z  = player.getZ();
-        tankInfo.ex = player.getEx();
-        tankInfo.ey = player.getEy();
-        tankInfo.ez = player.getEz();
 
         return tankInfo;
     }
@@ -251,20 +262,20 @@ public class Room {
         int count1 = 0;
         int count2 = 0;
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            if(player.getCamp() == 1){
-                SetBirthPos(player, count1);
+            RoomMember roomMember = playerIds.get(id);
+            if(roomMember.getCamp() == 1){
+                SetBirthPos(roomMember, count1);
                 count1++;
             }
             else {
-                SetBirthPos(player, count2);
+                SetBirthPos(roomMember, count2);
                 count2++;
             }
         }
         //生命值
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            player.setHp(100);
+            RoomMember roomMember = playerIds.get(id);
+            roomMember.setHp(100);
         }
     }
 
@@ -284,8 +295,8 @@ public class Room {
 
         int i=0;
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            msg.tanks[i] = PlayerToTankInfo(player);
+            RoomMember roomMember = playerIds.get(id);
+            msg.tanks[i] = PlayerToTankInfo(roomMember);
             i++;
         }
         Broadcast(msg);
@@ -294,8 +305,8 @@ public class Room {
 
 
     //是否死亡
-    public boolean IsDie(Player player){
-        return player.getHp()<= 0;
+    public boolean IsDie(RoomMember roomMember){
+        return roomMember.getHp()<= 0;
     }
 
 
@@ -305,7 +316,7 @@ public class Room {
         if(status != Status.FIGHT){
             return;
         }
-        //时间判断
+//        //时间判断
 //        if(NetManager.GetTimeStamp() - lastjudgeTime < 10f){
 //            return;
 //        }
@@ -320,11 +331,12 @@ public class Room {
         status = Status.PREPARE;
         //统计信息
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            if(player.getCamp() == winCamp){
-
-                player.getData().setWin(player.getData().getWin() + 1);}
-            else{ player.getData().setLost(player.getData().getLost() + 1);}
+            RoomMember roomMember = playerIds.get(id);
+            User user = DataManage.INSTANCE.onLineUser.get(id);
+            if(roomMember.getCamp() == winCamp){
+                user.playerData.setWin(user.playerData.getWin() + 1);
+            }
+            else{ user.playerData.setLost(user.playerData.getLost() + 1);}
         }
         //发送Result
         MsgBattleResult msg = new MsgBattleResult();
@@ -338,10 +350,10 @@ public class Room {
         int count1 = 0;
         int count2 = 0;
         for(String id : playerIds.keySet()) {
-            Player player = PlayerService.GetPlayer(id);
-            if(!IsDie(player)){
-                if(player.getCamp() == 1){count1++;};
-                if(player.getCamp() == 2){count2++;};
+            RoomMember roomMember = playerIds.get(id);
+            if(!IsDie(roomMember)){
+                if(roomMember.getCamp() == 1){count1++;};
+                if(roomMember.getCamp() == 2){count2++;};
             }
         }
         //判断

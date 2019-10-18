@@ -1,10 +1,18 @@
 package com.wu.server.room.manage.boss;
 
+import com.wu.server.Until.LogUntil;
+import com.wu.server.netty.NetManage;
+import com.wu.server.proto.base.MsgBase;
+import com.wu.server.proto.base.MsgName;
+import com.wu.server.proto.base.RoomInfo;
+import com.wu.server.proto.net.MsgCreateRoom;
+import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.room.base.MsgLine;
+import com.wu.server.room.base.Room;
 import com.wu.server.room.manage.work.RoomWorker;
-import javafx.concurrent.Worker;
 
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +26,7 @@ public class RoomBoss implements Runnable {
     static final int THREAD_MSG_MAX = 10;
     static final int WORKER_NUMBER =10;
     /**********************************************************************/
-
+    static int roomId = 0;
 
     private ExecutorService exec;
     //消息队列
@@ -49,25 +57,85 @@ public class RoomBoss implements Runnable {
         this.adjustmentPeriod = adjustmentPeriod;
     }
 
-    /**
-     * 房间管理线程管理
-     */
-    public void adjustWorkerNumber(){
-
-    }
 
     @Override
     public void run() {
         init();
         while(!Thread.interrupted()){
-
+            //消息处理
+            messageProcessing();
+            //工作线程调度
+            adjustWorkerNumber();
+            //管理findRoomWorker
+            adjustFindRoomWorker();
         }
     }
 
-    private void init() {
 
+    /**
+     * 初始化
+     */
+    private void init() {
         for (int i = 0 ;i < WORKER_NUMBER ;i++){
+            RoomWorker roomWorker = new RoomWorker();
+            idleRoomWorker.add(roomWorker);
             exec.execute(new RoomWorker());
         }
+    }
+
+    /**
+     * 消息处理
+     */
+
+    // todo 消息重复处理，设一个值，达到规定值丢弃（返回失败）
+    private void messageProcessing(){
+        try {
+            MsgBase msgBase = msgPending.take();
+            if (msgBase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM)){
+                MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
+                // todo 创建房间逻辑
+                RoomWorker worker  = idleRoomWorker.peek();
+                //无空闲房间，重新加载
+                if (worker == null){
+                    msgPending.add(msgBase);
+                    return;
+                }
+                findRoomWorker.put(roomId,worker);
+                worker.addRoom(roomId,msgCreateRoom.id);
+                msgCreateRoom.result = 0;
+                NetManage.send(msgCreateRoom.id , msgCreateRoom);
+            }
+            else if(msgBase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST)){
+                // 获取房间消息处理  todo test
+                MsgGetRoomList msgGetRoomList = (MsgGetRoomList) msgBase;
+                //遍历房间消息发送出去
+                msgGetRoomList.rooms = new RoomInfo[findRoomWorker.size()];
+                int i = 0 ;
+                for (Map.Entry<Integer, RoomWorker> entry : findRoomWorker.entrySet()) {
+                    msgGetRoomList.rooms[i] = entry.getValue().getRoomStatus(entry.getKey());
+                    i++;
+                }
+                NetManage.send(msgGetRoomList.id,msgGetRoomList);
+            }
+
+
+        } catch (InterruptedException e) {
+            LogUntil.logger.error(e.toString());
+        }
+    }
+
+
+    /**
+     * 房间管理线程管理
+     */
+    public void adjustWorkerNumber(){
+        //todo
+    }
+
+    /**
+     * FindRoomWorker管理
+     */
+    private void adjustFindRoomWorker() {
+        //todo
     }
 }

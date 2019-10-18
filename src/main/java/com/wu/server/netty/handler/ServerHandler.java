@@ -1,6 +1,7 @@
 package com.wu.server.netty.handler;
 
 import com.wu.server.Until.LogUntil;
+import com.wu.server.bean.PlayerData;
 import com.wu.server.bean.User;
 import com.wu.server.proto.system.MsgOffline;
 import com.wu.server.room.manage.boss.RoomBoss;
@@ -41,7 +42,8 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
          * 4.游戏结束让线程保存数据* TODO
          * */
         User user = DataManage.INSTANCE.onLineUser.get(ctx);
-        user.setChannel(null);
+        //Channel通道关闭，清除user对象的Channel
+
         if(user != null){
             if(user.roomId >= 0){
                     //离线消息
@@ -49,13 +51,15 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
                     msgOffline.id = user.getId();
                     //伪装离线消息发给工作线程  TODO 由工作线程去标记离线玩家
                     RoomBoss.getInstance().findRoomWorker.get(user.roomId).pendingMsg.add(msgOffline);
+                    user.setChannel(null);
             }else{
                 //移除登入消息
                 DataManage.INSTANCE.onLineUser.remove(user.getId());
             }
         }
-        DataManage.INSTANCE.connection.remove(user.getId());
+        DataManage.INSTANCE.connection.remove(ctx);
         ctx.close();
+
     }
 
     /**

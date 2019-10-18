@@ -74,7 +74,7 @@ public class MsgBase {
     public static  MsgBase DecodeMsg(String protoName, byte[] bytes){
         //字节数组转化为JSON对象
         try {
-            Class<?> clazz = Class.forName("com.wu.server.proto."+protoName);
+            Class<?> clazz = Class.forName("com.wu.server.proto.net."+protoName);
             JSONObject jsonObject = (JSONObject) JSONObject.parse(bytes);
             System.out.println(new Date() +" MsgBase Receive: "+ jsonObject);
             //将JSON对象转化为MsgaBase对象

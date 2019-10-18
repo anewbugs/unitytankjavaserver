@@ -1,5 +1,6 @@
 package com.wu.server.bean;
 
+import com.sun.istack.internal.NotNull;
 import io.netty.channel.Channel;
 
 public class User {
@@ -23,7 +24,8 @@ public class User {
         return channel;
     }
 
-    public void setChannel(Channel channel) {
+    public void setChannel( Channel channel) {
         this.channel = channel;
     }
+
 }

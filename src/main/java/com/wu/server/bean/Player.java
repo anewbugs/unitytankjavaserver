@@ -3,7 +3,7 @@ package com.wu.server.bean;
 import com.wu.server.proto.base.MsgBase;
 import io.netty.channel.Channel;
 
-public class Player {
+ class Player {
     //id
     private String id = "";
     //指向ClientState

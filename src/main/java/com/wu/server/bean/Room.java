@@ -14,8 +14,13 @@ import java.util.Date;
 import java.util.HashMap;
 
 public  class Room {
-    //id
-    public int id = 0;
+    public Room(int roomId ,String ownerId) {
+        this.roomId = roomId;
+        this.ownerId = ownerId;
+    }
+
+    //房间id
+    public int roomId = 0;
     //最大玩家数
     public int maxPlayer = 6;
     //玩家列表

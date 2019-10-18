@@ -5,7 +5,7 @@ import com.wu.server.dao.UserDao;
 
 import java.util.HashMap;
 
-public class PlayerService {
+ class PlayerService {
     private static HashMap<String, Player> players = new HashMap<String, Player>();
     /**
      * 确认用户
