@@ -5,7 +5,6 @@ import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.base.Room;
-import com.wu.server.room.base.RoomMember;
 
 import java.util.HashMap;
 
@@ -24,7 +23,7 @@ public class RoomWorker implements Runnable {
     //注册在该线程下的房间
     private HashMap<Integer, Room> roomHashMap = new HashMap<>(THREAD_WORKING_ROOM_MAX);
     //管理房间数目
-    private volatile int manageRoomNumber = 0;
+    public volatile int manageRoomNumber = 0;
     //添加房间
     public synchronized void addRoom (int roomId , String userId){
        //初始化房间
@@ -65,8 +64,9 @@ public class RoomWorker implements Runnable {
     private void messageProcessing(){
         try {
             MsgBase msgBase = pendingMsg.take();
-            // todo
+            switch (msgBase.protoName){
 
+            }
         } catch (InterruptedException e) {
             LogUntil.logger.error(e.toString());
         }

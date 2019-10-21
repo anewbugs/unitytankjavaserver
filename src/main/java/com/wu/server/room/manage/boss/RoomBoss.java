@@ -8,12 +8,9 @@ import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.proto.net.MsgCreateRoom;
 import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.room.base.MsgLine;
-import com.wu.server.room.base.Room;
 import com.wu.server.room.manage.work.RoomWorker;
-
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -32,7 +29,7 @@ public class RoomBoss implements Runnable {
     //消息队列
     public MsgLine msgPending = new MsgLine(THREAD_MSG_MAX);
     //工作中线程
-    private PriorityQueue<RoomWorker> workingRoomWorker = new PriorityQueue<>();
+    private LinkedList<RoomWorker> workingRoomWorker = new LinkedList<>();
     //闲置线程
     private Queue<RoomWorker> idleRoomWorker = new LinkedList<>();
     //房间管理的睡眠度
@@ -93,7 +90,7 @@ public class RoomBoss implements Runnable {
             MsgBase msgBase = msgPending.take();
             if (msgBase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM)){
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
-                // todo 创建房间逻辑
+                // 创建房间逻辑 todo test
                 RoomWorker worker  = idleRoomWorker.peek();
                 //无空闲房间，重新加载
                 if (worker == null){
@@ -129,13 +126,27 @@ public class RoomBoss implements Runnable {
      * 房间管理线程管理
      */
     public void adjustWorkerNumber(){
-        //todo
+        // todo test
+        RoomWorker roomWorker = idleRoomWorker.peek();
+        //闲置工作线程负载满额调入工作线程中
+        if (roomWorker.manageRoomNumber == roomWorker.THREAD_WORKING_ROOM_MAX){
+            workingRoomWorker.add(idleRoomWorker.poll());
+        }
+
     }
 
     /**
      * FindRoomWorker管理
      */
     private void adjustFindRoomWorker() {
-        //todo
+        //todo test
+        for (int i = 0; i < workingRoomWorker.size(); i++) {
+           RoomWorker roomWorker = workingRoomWorker.get(i);
+           //遍历工作线程有闲置的重新加入闲置闲置线程之上
+           if(roomWorker.manageRoomNumber < RoomWorker.THREAD_WORKING_ROOM_MAX){
+               idleRoomWorker.add(roomWorker);
+               workingRoomWorker.remove(i);
+           }
+        }
     }
 }

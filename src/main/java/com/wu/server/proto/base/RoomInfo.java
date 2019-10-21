@@ -1,7 +1,5 @@
 package com.wu.server.proto.base;
 
-import com.wu.server.bean.Room;
-
 public class RoomInfo {
     public int id = 0;		//房间id
     public int count = 0;	//人数
