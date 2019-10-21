@@ -6,7 +6,6 @@ import com.wu.server.proto.net.*;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.system.MsgReconnect;
 import com.wu.server.room.manage.boss.RoomBoss;
-import com.wu.server.service.*;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -121,158 +120,158 @@ public class MsgHandler {
 /***************************************************房间管理*************************************************************/
 /***********************************************************************************************************************/
 
-    /**
-     * 战绩获取
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgGetAchieve msg = (MsgGetAchieve)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-
-        msg.win = player.getData().getWin();
-        msg.lost = player.getData().getLost();
-
-        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
-    }
-
-    public  void MsgGetRoomList(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgGetRoomList msg = (MsgGetRoomList)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), RoomService.ToMsg()));
-        //player.Send(RoomManager.ToMsg());
-    }
-    /**
-     *  创建房间
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgCreateRoom(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgCreateRoom msg = (MsgCreateRoom)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        //已经在房间里
-        if(player.getRoomId() >=0 ){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //创建
-        Room room = RoomService.AddRoom();
-        room.AddPlayer(player.getId());
-
-        msg.result = 0;
-        player.send(msg);
-    }
-
-    /**
-     * 进入房间
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgEnterRoom(ChannelHandlerContext ctx,  MsgBase msgBase){
-        MsgEnterRoom msg = (MsgEnterRoom)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        //已经在房间里
-        if(player.getRoomId() >=0 ){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //获取房间
-        Room room = RoomService.GetRoom(msg.id);
-        if(room == null){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //进入
-        if(!room.AddPlayer(player.getId())){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //返回协议
-        msg.result = 0;
-        player.send(msg);
-    }
-    /**
-     *  获取房间信息
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgGetRoomInfo(ChannelHandlerContext ctx,   MsgBase msgBase){
-        MsgGetRoomInfo msg = (MsgGetRoomInfo)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-
-        Room room = RoomService.GetRoom(player.getRoomId());
-        if(room == null){
-            player.send(msg);
-            return;
-        }
-
-        player.send(room.ToMsg());
-    }
-
-    /**
-     *  离开房间
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgLeaveRoom(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgLeaveRoom msg = (MsgLeaveRoom)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-
-        Room room = RoomService.GetRoom(player.getRoomId());
-        if(room == null){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-
-        room.RemovePlayer(player.getId());
-        //返回协议
-        msg.result = 0;
-        player.send(msg);
-    }
-
-    /**
-     * 请求开始战斗
-     * @param ctx
-     * @param msgBase
-     */
-    public  void MsgStartBattle(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgStartBattle msg = (MsgStartBattle)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        //room
-        Room room = RoomService.GetRoom(player.getRoomId());
-        if(room == null){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //是否是房主
-        if(!room.isOwner(player)){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //开战
-        if(!room.StartBattle()){
-            msg.result = 1;
-            player.send(msg);
-            return;
-        }
-        //成功
-        msg.result = 0;
-        player.send(msg);
-    }
+//    /**
+//     * 战绩获取
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgGetAchieve(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgGetAchieve msg = (MsgGetAchieve)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//
+//        msg.win = player.getData().getWin();
+//        msg.lost = player.getData().getLost();
+//
+//        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(),msg));
+//    }
+//
+//    public  void MsgGetRoomList(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgGetRoomList msg = (MsgGetRoomList)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        ctx.channel().writeAndFlush(MsgBase.Encode(ctx.alloc().ioBuffer(), RoomService.ToMsg()));
+//        //player.Send(RoomManager.ToMsg());
+//    }
+//    /**
+//     *  创建房间
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgCreateRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgCreateRoom msg = (MsgCreateRoom)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        //已经在房间里
+//        if(player.getRoomId() >=0 ){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //创建
+//        Room room = RoomService.AddRoom();
+//        room.AddPlayer(player.getId());
+//
+//        msg.result = 0;
+//        player.send(msg);
+//    }
+//
+//    /**
+//     * 进入房间
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgEnterRoom(ChannelHandlerContext ctx,  MsgBase msgBase){
+//        MsgEnterRoom msg = (MsgEnterRoom)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        //已经在房间里
+//        if(player.getRoomId() >=0 ){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //获取房间
+//        Room room = RoomService.GetRoom(msg.id);
+//        if(room == null){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //进入
+//        if(!room.AddPlayer(player.getId())){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //返回协议
+//        msg.result = 0;
+//        player.send(msg);
+//    }
+//    /**
+//     *  获取房间信息
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgGetRoomInfo(ChannelHandlerContext ctx,   MsgBase msgBase){
+//        MsgGetRoomInfo msg = (MsgGetRoomInfo)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//
+//        Room room = RoomService.GetRoom(player.getRoomId());
+//        if(room == null){
+//            player.send(msg);
+//            return;
+//        }
+//
+//        player.send(room.ToMsg());
+//    }
+//
+//    /**
+//     *  离开房间
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgLeaveRoom(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgLeaveRoom msg = (MsgLeaveRoom)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//
+//        Room room = RoomService.GetRoom(player.getRoomId());
+//        if(room == null){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//
+//        room.RemovePlayer(player.getId());
+//        //返回协议
+//        msg.result = 0;
+//        player.send(msg);
+//    }
+//
+//    /**
+//     * 请求开始战斗
+//     * @param ctx
+//     * @param msgBase
+//     */
+//    public  void MsgStartBattle(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgStartBattle msg = (MsgStartBattle)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        //room
+//        Room room = RoomService.GetRoom(player.getRoomId());
+//        if(room == null){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //是否是房主
+//        if(!room.isOwner(player)){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //开战
+//        if(!room.StartBattle()){
+//            msg.result = 1;
+//            player.send(msg);
+//            return;
+//        }
+//        //成功
+//        msg.result = 0;
+//        player.send(msg);
+//    }
 /***************************************************ping管理*************************************************************/
 /***********************************************************************************************************************/
     /**
@@ -288,98 +287,98 @@ public class MsgHandler {
 /***************************************************战斗管理*************************************************************/
 /***********************************************************************************************************************/
 
-//同步位置协议
-public  void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
-    System.out.println(msgBase.getClass());
-    MsgSyncTank msg = (MsgSyncTank)msgBase;
-    Player player =ConnectionService.GetPlayer(ctx);
-    if(player == null) return;
-    //room
-    Room room = RoomService.GetRoom(player.getRoomId());
-    if(room == null){
-        return;
-    }
-    //status
-    if(room.status != Status.FIGHT){
-        return;
-    }
-//    //是否作弊
-//    if(Math.Abs(player.x - msg.x) > 5 ||
-//            Math.Abs(player.y - msg.y) > 5 ||
-//            Math.Abs(player.z - msg.z) > 5){
-//        System.out.println("疑似作弊 " + player.id);
+////同步位置协议
+//public  void MsgSyncTank(ChannelHandlerContext ctx, MsgBase msgBase){
+//    System.out.println(msgBase.getClass());
+//    MsgSyncTank msg = (MsgSyncTank)msgBase;
+//    Player player =ConnectionService.GetPlayer(ctx);
+//    if(player == null) return;
+//    //room
+//    Room room = RoomService.GetRoom(player.getRoomId());
+//    if(room == null){
+//        return;
 //    }
-    //更新信息
-    player.setX(msg.x);
-    player.setY(msg.y);
-    player.setZ(msg.z);
-    player.setEx(msg.ex);
-    player.setEy(msg.ey);
-    player.setEz(msg.ez);
-
-//    player.x = msg.x;
-//    player.y = msg.y;
-//    player.z = msg.z;
-//    player.ex = msg.ex;
-//    player.ey = msg.ey;
-//    player.ez = msg.ez;
-    //广播
-    msg.id = player.getId();
-    room.Broadcast(msg);
-}
-
-    //开火协议
-    public  void MsgFire(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgFire msg = (MsgFire)msgBase;
-        Player player =ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        //room
-        Room room = RoomService.GetRoom(player.getRoomId());
-        if(room == null){
-            return;
-        }
-        //status
-        if(room.status != Status.FIGHT){
-            return;
-        }
-        //广播
-        msg.id = player.getId();
-        room.Broadcast(msg);
-    }
-
-    //击中协议
-    //击中目标后判断游戏是否结束
-    public  void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
-        MsgHit msg = (MsgHit)msgBase;
-        Player player = ConnectionService.GetPlayer(ctx);
-        if(player == null) return;
-        //targetPlayer
-        Player targetPlayer = PlayerService.GetPlayer(msg.targetId);
-        if(targetPlayer == null){
-            return;
-        }
-        //room
-        Room room = RoomService.GetRoom(player.getRoomId());
-        if(room == null){
-            return;
-        }
-        //status
-        if(room.status != Status.FIGHT){
-            return;
-        }
-        //发送者校验
-        if(!player.getId().equals(msg.id)){
-            return;
-        }
-        //状态
-        int damage = 35;
-        targetPlayer.setHp(targetPlayer.getHp() - damage);
-        //广播
-        msg.id = player.getId();
-        msg.hp = player.getHp();
-        msg.damage = damage;
-        room.Broadcast(msg);
-       //目标死亡后判断整个游戏胜负
-             room.Update();
-    }
+//    //status
+//    if(room.status != Status.FIGHT){
+//        return;
+//    }
+////    //是否作弊
+////    if(Math.Abs(player.x - msg.x) > 5 ||
+////            Math.Abs(player.y - msg.y) > 5 ||
+////            Math.Abs(player.z - msg.z) > 5){
+////        System.out.println("疑似作弊 " + player.id);
+////    }
+//    //更新信息
+//    player.setX(msg.x);
+//    player.setY(msg.y);
+//    player.setZ(msg.z);
+//    player.setEx(msg.ex);
+//    player.setEy(msg.ey);
+//    player.setEz(msg.ez);
+//
+////    player.x = msg.x;
+////    player.y = msg.y;
+////    player.z = msg.z;
+////    player.ex = msg.ex;
+////    player.ey = msg.ey;
+////    player.ez = msg.ez;
+//    //广播
+//    msg.id = player.getId();
+//    room.Broadcast(msg);
+//}
+//
+//    //开火协议
+//    public  void MsgFire(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgFire msg = (MsgFire)msgBase;
+//        Player player =ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        //room
+//        Room room = RoomService.GetRoom(player.getRoomId());
+//        if(room == null){
+//            return;
+//        }
+//        //status
+//        if(room.status != Status.FIGHT){
+//            return;
+//        }
+//        //广播
+//        msg.id = player.getId();
+//        room.Broadcast(msg);
+//    }
+//
+//    //击中协议
+//    //击中目标后判断游戏是否结束
+//    public  void MsgHit(ChannelHandlerContext ctx, MsgBase msgBase){
+//        MsgHit msg = (MsgHit)msgBase;
+//        Player player = ConnectionService.GetPlayer(ctx);
+//        if(player == null) return;
+//        //targetPlayer
+//        Player targetPlayer = PlayerService.GetPlayer(msg.targetId);
+//        if(targetPlayer == null){
+//            return;
+//        }
+//        //room
+//        Room room = RoomService.GetRoom(player.getRoomId());
+//        if(room == null){
+//            return;
+//        }
+//        //status
+//        if(room.status != Status.FIGHT){
+//            return;
+//        }
+//        //发送者校验
+//        if(!player.getId().equals(msg.id)){
+//            return;
+//        }
+//        //状态
+//        int damage = 35;
+//        targetPlayer.setHp(targetPlayer.getHp() - damage);
+//        //广播
+//        msg.id = player.getId();
+//        msg.hp = player.getHp();
+//        msg.damage = damage;
+//        room.Broadcast(msg);
+//       //目标死亡后判断整个游戏胜负
+//             room.Update();
+//    }
 }

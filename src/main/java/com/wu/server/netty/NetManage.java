@@ -3,10 +3,10 @@ package com.wu.server.netty;
 import com.sun.istack.internal.NotNull;
 import com.wu.server.bean.User;
 import com.wu.server.proto.base.MsgBase;
-import com.wu.server.service.RoomService;
 import com.wu.server.status.DataManage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 
 public interface NetManage {
 
@@ -21,6 +21,11 @@ public interface NetManage {
         Channel channel = user.getChannel();
         ByteBuf byteBuf = MsgBase.Encode(channel.alloc().ioBuffer(), msgBase);
         channel.writeAndFlush(byteBuf);
+    }
+
+    public static void send(ChannelHandlerContext ctx ,MsgBase msgBase){
+        ByteBuf byteBuf = MsgBase.Encode(ctx.channel().alloc().ioBuffer(), msgBase);
+        ctx.channel().writeAndFlush(byteBuf);
     }
 
 }

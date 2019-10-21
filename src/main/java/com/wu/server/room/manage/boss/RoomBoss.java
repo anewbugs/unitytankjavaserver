@@ -21,7 +21,7 @@ public class RoomBoss implements Runnable {
     /**********************************************************************/
     //消息处理最大量
     static final int THREAD_MSG_MAX = 10;
-    static final int WORKER_NUMBER =10;
+    static final int WORKER_NUMBER =1;
     /**********************************************************************/
     static int roomId = 0;
 

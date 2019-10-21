@@ -4,6 +4,7 @@ import com.wu.server.Until.LogUntil;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.room.manage.boss.RoomBoss;
+import com.wu.server.room.manage.work.RoomWorker;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -32,7 +33,8 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                 //通过玩家id获取user中房间id
                 int roomId =DataManage.INSTANCE.onLineUser.get(userId).roomId;;
                 //将消息分发工作线程 todo 工作线程处理这些消息
-                RoomBoss.getInstance().findRoomWorker.get(roomId).pendingMsg.add(msgbase);
+                RoomWorker roomWorker = RoomBoss.getInstance().findRoomWorker.get(roomId);
+                roomWorker.pendingMsg.add(msgbase);
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 LogUntil.logger.error(e.toString());
             }

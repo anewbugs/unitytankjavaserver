@@ -12,13 +12,17 @@ public class MsgName {
         public static final String MSG_KICK = "MsgKick";
         public static final String MSG_RECONNECT = "MsgReconnect";
     }
+    public static final class User{
+        public static final String MSG_GET_ACHIEVE = "MsgGetAchieve";
+    }
+
     public static final class Notepad {
         public static final String MSG_GET_TEXT = "MsgGetText";
         public static final String MSG_SAVE_TEXT = "MsgSaveText";
     }
 
     public static final class Room {
-        public static final String MSG_GET_ACHIEVE = "MsgGetAchieve";
+
         public static final String MSG_GET_ROOM_LIST = "MsgGetRoomList";
         public static final String MSG_CREATE_ROOM = "MsgCreateRoom";
         public static final String MSG_ENTER_ROOM = "MsgEnterRoom";

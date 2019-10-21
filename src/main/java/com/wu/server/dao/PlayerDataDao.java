@@ -2,8 +2,8 @@ package com.wu.server.dao;
 
 import com.wu.server.Until.LogUntil;
 import com.wu.server.Until.SqlUntil;
-import com.wu.server.bean.Player;
 import com.wu.server.bean.PlayerData;
+import com.wu.server.bean.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -105,10 +105,10 @@ public class PlayerDataDao {
 
     /**
      * 更新玩家数据
-     * @param player
+     * @param user
      * @return
      */
-    public static boolean UpdatePlayerData(Player player) {
+    public static boolean UpdatePlayerData(User user) {
         Connection conn=null;
 
         try {
@@ -117,11 +117,11 @@ public class PlayerDataDao {
             String sql="update playerdata set coin = ?,text = ?,win = ?,lost= ? where iduser = ?;";
             if (conn != null) {
                 PreparedStatement preStmt=conn.prepareStatement(sql);
-                preStmt.setInt(1,player.getData().getCoin());
-                preStmt.setString(2,player.getData().getText());
-                preStmt.setInt(3,player.getData().getWin());
-                preStmt.setInt(4,player.getData().getLost());
-                preStmt.setString(5,player.getId());
+                preStmt.setInt(1,user.playerData.getCoin());
+                preStmt.setString(2,user.playerData.getText());
+                preStmt.setInt(3,user.playerData.getWin());
+                preStmt.setInt(4,user.playerData.getLost());
+                preStmt.setString(5,user.getId());
                 System.out.println(preStmt.toString());
                 //preStmt.setString(2, password);
                 int count =preStmt.executeUpdate();

@@ -88,8 +88,8 @@ public class Room {
         if(ownerId.equals("") ){
             ownerId = user.getId();
         }
-        //广播
-        Broadcast(ToMsg());
+//        //广播
+//        Broadcast(ToMsg());
         return true;
     }
 
@@ -178,8 +178,7 @@ public class Room {
     }
 
     //生成MsgGetRoomInfo协议
-    public MsgBase ToMsg(){
-        MsgGetRoomInfo msg = new MsgGetRoomInfo();
+    public MsgBase ToMsg(MsgGetRoomInfo msg){
         int count = playerIds.size();
         msg.players = new PlayerInfo[count];
         //players

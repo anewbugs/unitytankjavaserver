@@ -67,6 +67,8 @@ public class NetServer implements Runnable {
                         nioSocketChannel.pipeline().addLast("PingHandle", new PingHandle());
                         //登入消息处理
                         nioSocketChannel.pipeline().addLast("LoginHandle" , new LoginHandle());
+                        //玩家数据获取
+                        nioSocketChannel.pipeline().addLast("UserHandle",new UserHandle());
                        //房间消息管理
                         nioSocketChannel.pipeline().addLast("RoomHandle" , new RoomHandle());
 
