@@ -50,7 +50,7 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
                     MsgOffline msgOffline = new MsgOffline();
                     msgOffline.id = user.getId();
                     //伪装离线消息发给工作线程  TODO 由工作线程去标记离线玩家
-                    RoomBoss.getInstance().findRoomWorker.get(user.roomId).pendingMsg.add(msgOffline);
+                    RoomBoss.getInstance().findRoomWorker.get(user.roomId).putMsg(msgOffline);
                     user.setChannel(null);
             }else{
                 //移除登入消息

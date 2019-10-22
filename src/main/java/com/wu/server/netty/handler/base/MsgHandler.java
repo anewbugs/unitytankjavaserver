@@ -83,8 +83,7 @@ public class MsgHandler {
                     .getInstance()
                     .findRoomWorker
                     .get(user.roomId)
-                    .pendingMsg
-                    .add(msgReconnect);
+                    .putMsg(msgReconnect);
         }else{
             User user = new User(msg.id,ctx.channel());
             user.playerData = playerData;

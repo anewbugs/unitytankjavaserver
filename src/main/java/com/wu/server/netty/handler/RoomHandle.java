@@ -3,6 +3,7 @@ package com.wu.server.netty.handler;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
+import com.wu.server.proto.net.MsgFire;
 import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.room.manage.work.RoomWorker;
 import com.wu.server.status.DataManage;
@@ -22,7 +23,11 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
         if(msgbase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM) ||
                 msgbase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST) ){
             //创建房间消息转发给RoomBoss线程取处理 todo Boss线程处理该消息
-            RoomBoss.getInstance().msgPending.add(msgbase);
+            try {
+                RoomBoss.getInstance().msgPending.put(msgbase);
+            } catch (InterruptedException e) {
+                LogUntil.logger.error(e.toString());
+            }
         }else{
             // 房间其他消息转发给房间工作者线程自己
 
@@ -34,8 +39,10 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                 int roomId =DataManage.INSTANCE.onLineUser.get(userId).roomId;;
                 //将消息分发工作线程 todo 工作线程处理这些消息
                 RoomWorker roomWorker = RoomBoss.getInstance().findRoomWorker.get(roomId);
-                roomWorker.pendingMsg.add(msgbase);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
+                LogUntil.logger.debug(roomWorker.toString());
+                roomWorker.putMsg(msgbase);
+
+            } catch (NoSuchFieldException | IllegalAccessException  e) {
                 LogUntil.logger.error(e.toString());
             }
 

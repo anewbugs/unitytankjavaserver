@@ -12,6 +12,7 @@ import com.wu.server.room.manage.work.RoomWorker;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
@@ -36,7 +37,7 @@ public class RoomBoss implements Runnable {
     private int adjustmentPeriod ;
     //采取懒汉模式构造roomBoss线程
     //房间和其注册的线程key:roomId,value:RoomWorker
-    public ConcurrentHashMap<Integer, RoomWorker> findRoomWorker = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<Integer, RoomWorker> findRoomWorker = new ConcurrentHashMap<>();
     private static RoomBoss roomBoss;
     public static void init(ExecutorService exec, int adjustmentPeriod) {
             roomBoss = new RoomBoss(exec,adjustmentPeriod);
@@ -52,12 +53,12 @@ public class RoomBoss implements Runnable {
     private RoomBoss(ExecutorService exec, int adjustmentPeriod) {
         this.exec = exec;
         this.adjustmentPeriod = adjustmentPeriod;
+        init();
     }
 
 
     @Override
     public void run() {
-        init();
         while(!Thread.interrupted()){
             //消息处理
             messageProcessing();
@@ -92,6 +93,7 @@ public class RoomBoss implements Runnable {
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
                 // 创建房间逻辑 todo test
                 RoomWorker worker  = idleRoomWorker.peek();
+                LogUntil.logger.debug(roomId+"    "+worker);
                 //无空闲房间，重新加载
                 if (worker == null){
                     msgPending.add(msgBase);
@@ -100,6 +102,7 @@ public class RoomBoss implements Runnable {
                 findRoomWorker.put(roomId,worker);
                 worker.addRoom(roomId,msgCreateRoom.id);
                 msgCreateRoom.result = 0;
+                roomId++;
                 NetManage.send(msgCreateRoom.id , msgCreateRoom);
             }
             else if(msgBase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST)){

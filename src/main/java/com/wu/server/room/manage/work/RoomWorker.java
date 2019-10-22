@@ -23,9 +23,9 @@ public class RoomWorker implements Runnable {
 
 
     //房间待处理消息
-    public ArrayBlockingQueue<MsgBase> pendingMsg = new ArrayBlockingQueue<MsgBase>(THREAD_MSG_MAX);
+    private  MsgLine pendingMsg = new MsgLine(THREAD_MSG_MAX);
     //注册在该线程下的房间
-    private HashMap<Integer, Room> roomHashMap = new HashMap<>(THREAD_WORKING_ROOM_MAX);
+    private  HashMap<Integer, Room> roomHashMap = new HashMap<>(THREAD_WORKING_ROOM_MAX);
     //管理房间数目
     public volatile int manageRoomNumber = 0;
     //添加房间
@@ -68,13 +68,10 @@ public class RoomWorker implements Runnable {
      */
     private void messageProcessing(){
         try {
-            while(true){
-                System.out.println(pendingMsg.peek());
-                if(pendingMsg.peek() != null) break;
-                Thread.sleep(1000);
-            }
-
             MsgBase msgBase = pendingMsg.take();
+
+            LogUntil.logger.debug(msgBase.toString() +"=================================================================================");
+
             switch (msgBase.protoName){
                 case MsgName.Room.MSG_GET_ROOM_INFO :
                     //  获取房间内信息 todo test
@@ -118,6 +115,15 @@ public class RoomWorker implements Runnable {
         roomInfo.count = roomHashMap.get(roomId).playerIds.size();
         return roomInfo;
     }
+
+    public void putMsg(MsgBase msgBase){
+        try {
+            this.pendingMsg.put(msgBase);
+        } catch (InterruptedException e){
+            LogUntil.logger.error(e.toString());
+        }
+    }
+
 
     /**
      * 掉线由机器人控制
