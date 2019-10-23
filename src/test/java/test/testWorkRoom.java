@@ -15,15 +15,28 @@ public class testWorkRoom {
         RoomBoss.init(exec,10);
 
         RoomWorker roomWorker = new RoomWorker();
-        RoomBoss.findRoomWorker.put(0,roomWorker);
         exec.execute(roomWorker);
-        while(true){
-            try {
-                Thread.sleep(1000);
-               RoomBoss.findRoomWorker.get(0).putMsg(new MsgFire());
-            } catch (Exception e) {
-                e.printStackTrace();
+        exec.execute(new Runnable() {
+            @Override
+            public void run() {
+                RoomBoss.findRoomWorker.put(0,roomWorker);
             }
-        }
+        });
+        exec.execute(new Runnable() {
+            @Override
+            public void run() {
+                while(true){
+                    try {
+                        Thread.sleep(1000);
+                        RoomBoss.findRoomWorker.get(0).putMsg(new MsgFire());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
     }
+
+
 }

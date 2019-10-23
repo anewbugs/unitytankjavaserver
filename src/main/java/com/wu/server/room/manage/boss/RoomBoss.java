@@ -6,6 +6,7 @@ import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.proto.net.MsgCreateRoom;
+import com.wu.server.proto.net.MsgFire;
 import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.manage.work.RoomWorker;
@@ -21,8 +22,8 @@ public class RoomBoss implements Runnable {
    //配置
     /**********************************************************************/
     //消息处理最大量
-    static final int THREAD_MSG_MAX = 10;
-    static final int WORKER_NUMBER =1;
+    private static final int THREAD_MSG_MAX = 10;
+    private static final int WORKER_NUMBER =1;
     /**********************************************************************/
     static int roomId = 0;
 
@@ -33,8 +34,6 @@ public class RoomBoss implements Runnable {
     private LinkedList<RoomWorker> workingRoomWorker = new LinkedList<>();
     //闲置线程
     private Queue<RoomWorker> idleRoomWorker = new LinkedList<>();
-    //房间管理的睡眠度
-    private int adjustmentPeriod ;
     //采取懒汉模式构造roomBoss线程
     //房间和其注册的线程key:roomId,value:RoomWorker
     public static ConcurrentHashMap<Integer, RoomWorker> findRoomWorker = new ConcurrentHashMap<>();
@@ -52,7 +51,7 @@ public class RoomBoss implements Runnable {
      */
     private RoomBoss(ExecutorService exec, int adjustmentPeriod) {
         this.exec = exec;
-        this.adjustmentPeriod = adjustmentPeriod;
+        //房间管理的睡眠度
         init();
     }
 
@@ -99,11 +98,15 @@ public class RoomBoss implements Runnable {
                     msgPending.add(msgBase);
                     return;
                 }
-                findRoomWorker.put(roomId,worker);
+                RoomBoss.findRoomWorker.put(roomId,worker);
                 worker.addRoom(roomId,msgCreateRoom.id);
                 msgCreateRoom.result = 0;
                 roomId++;
                 NetManage.send(msgCreateRoom.id , msgCreateRoom);
+                while(true){
+                    Thread.sleep(1000);
+                    RoomBoss.findRoomWorker.get(0).putMsg(new MsgFire());
+                }
             }
             else if(msgBase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST)){
                 // 获取房间消息处理  todo test
