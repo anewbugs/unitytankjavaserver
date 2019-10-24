@@ -37,7 +37,7 @@ public class Room {
 //    public enum Status {
 //        PREPARE, FIGHT
 //    }
-    public int status = Status.PREPARE;
+    public volatile int status = Status.PREPARE;
     //出生点位置配置
     static float[][][] birthConfig =  {
             //阵营1出生点

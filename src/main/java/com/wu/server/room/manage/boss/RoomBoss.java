@@ -10,11 +10,12 @@ import com.wu.server.proto.net.MsgFire;
 import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.manage.work.RoomWorker;
+import com.wu.server.status.DataManage;
+
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
 public class RoomBoss implements Runnable {
@@ -29,14 +30,14 @@ public class RoomBoss implements Runnable {
 
     private ExecutorService exec;
     //消息队列
-    public MsgLine msgPending = new MsgLine(THREAD_MSG_MAX);
+    public MsgLine roomBossMsgPending = new MsgLine();
+
     //工作中线程
-    private LinkedList<RoomWorker> workingRoomWorker = new LinkedList<>();
+    private static LinkedList<RoomWorker> workingRoomWorker = new LinkedList<>();
     //闲置线程
-    private Queue<RoomWorker> idleRoomWorker = new LinkedList<>();
+    public static ConcurrentLinkedQueue<RoomWorker> idleRoomWorker = new ConcurrentLinkedQueue<>();
     //采取懒汉模式构造roomBoss线程
-    //房间和其注册的线程key:roomId,value:RoomWorker
-    public static ConcurrentHashMap<Integer, RoomWorker> findRoomWorker = new ConcurrentHashMap<>();
+
     private static RoomBoss roomBoss;
     public static void init(ExecutorService exec, int adjustmentPeriod) {
             roomBoss = new RoomBoss(exec,adjustmentPeriod);
@@ -59,24 +60,26 @@ public class RoomBoss implements Runnable {
     @Override
     public void run() {
         while(!Thread.interrupted()){
-            //消息处理
+
+
             messageProcessing();
             //工作线程调度
             adjustWorkerNumber();
             //管理findRoomWorker
             adjustFindRoomWorker();
+
         }
     }
 
 
     /**
-     * 初始化
+     * 初始化工作线程
      */
     private void init() {
         for (int i = 0 ;i < WORKER_NUMBER ;i++){
             RoomWorker roomWorker = new RoomWorker();
             idleRoomWorker.add(roomWorker);
-            exec.execute(new RoomWorker());
+            exec.execute(roomWorker);
         }
     }
 
@@ -87,7 +90,9 @@ public class RoomBoss implements Runnable {
     // todo 消息重复处理，设一个值，达到规定值丢弃（返回失败）
     private void messageProcessing(){
         try {
-            MsgBase msgBase = msgPending.take();
+            if (this.roomBossMsgPending.isEmpty() ) return;
+            MsgBase msgBase = roomBossMsgPending.poll();
+            System.out.println(this+ "---------------------------------");//todo
             if (msgBase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM)){
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
                 // 创建房间逻辑 todo test
@@ -95,26 +100,23 @@ public class RoomBoss implements Runnable {
                 LogUntil.logger.debug(roomId+"    "+worker);
                 //无空闲房间，重新加载
                 if (worker == null){
-                    msgPending.add(msgBase);
+                    roomBossMsgPending.add(msgBase);
                     return;
                 }
-                RoomBoss.findRoomWorker.put(roomId,worker);
+                DataManage.INSTANCE.findRoomWorker.put(roomId,worker);
+
                 worker.addRoom(roomId,msgCreateRoom.id);
                 msgCreateRoom.result = 0;
                 roomId++;
                 NetManage.send(msgCreateRoom.id , msgCreateRoom);
-                while(true){
-                    Thread.sleep(1000);
-                    RoomBoss.findRoomWorker.get(0).putMsg(new MsgFire());
-                }
             }
             else if(msgBase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST)){
                 // 获取房间消息处理  todo test
                 MsgGetRoomList msgGetRoomList = (MsgGetRoomList) msgBase;
                 //遍历房间消息发送出去
-                msgGetRoomList.rooms = new RoomInfo[findRoomWorker.size()];
+                msgGetRoomList.rooms = new RoomInfo[DataManage.INSTANCE.findRoomWorker.size()];
                 int i = 0 ;
-                for (Map.Entry<Integer, RoomWorker> entry : findRoomWorker.entrySet()) {
+                for (Map.Entry<Integer, RoomWorker> entry : DataManage.INSTANCE.findRoomWorker.entrySet()) {
                     msgGetRoomList.rooms[i] = entry.getValue().getRoomStatus(entry.getKey());
                     i++;
                 }
@@ -122,7 +124,7 @@ public class RoomBoss implements Runnable {
             }
 
 
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             LogUntil.logger.error(e.toString());
         }
     }
@@ -135,6 +137,10 @@ public class RoomBoss implements Runnable {
         // todo test
         RoomWorker roomWorker = idleRoomWorker.peek();
         //闲置工作线程负载满额调入工作线程中
+        // todo 处理线程闲置线程空、
+
+
+
         if (roomWorker.manageRoomNumber == roomWorker.THREAD_WORKING_ROOM_MAX){
             workingRoomWorker.add(idleRoomWorker.poll());
         }

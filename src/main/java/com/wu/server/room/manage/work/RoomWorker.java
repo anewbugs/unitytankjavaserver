@@ -1,5 +1,6 @@
 package com.wu.server.room.manage.work;
 
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
@@ -21,9 +22,8 @@ public class RoomWorker implements Runnable {
     private static final int THREAD_MSG_MAX = 10;
     /**********************************************************************/
 
-
     //房间待处理消息
-    private  MsgLine pendingMsg = new MsgLine(THREAD_MSG_MAX);
+    public MsgLine workerRoomPendingMsg = new MsgLine();
     //注册在该线程下的房间
     private  HashMap<Integer, Room> roomHashMap = new HashMap<>(THREAD_WORKING_ROOM_MAX);
     //管理房间数目
@@ -53,6 +53,8 @@ public class RoomWorker implements Runnable {
         LogUntil.logger.info(this.toString());
         while (!Thread.interrupted()){
            //消息处理
+
+            //消息处理
             messageProcessing();
             //ai机器人
             robotAi();
@@ -68,10 +70,14 @@ public class RoomWorker implements Runnable {
      */
     private void messageProcessing(){
         try {
-            MsgBase msgBase = pendingMsg.take();
+
+            if (workerRoomPendingMsg.isEmpty())  return;
+            MsgBase msgBase = workerRoomPendingMsg.poll();
+            LogUntil.logger.debug("=================================================================================");
+
 
             LogUntil.logger.debug(msgBase.toString() +"=================================================================================");
-
+            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             switch (msgBase.protoName){
                 case MsgName.Room.MSG_GET_ROOM_INFO :
                     //  获取房间内信息 todo test
@@ -81,6 +87,7 @@ public class RoomWorker implements Runnable {
                     break;
                 case MsgName.Room.MSG_ENTER_ROOM :
                     // todo 进入房间消息处理
+
                     break;
                 case  MsgName.Room.MSG_LEAVE_ROOM :
                     //todo 离开房间消息处理
@@ -98,7 +105,7 @@ public class RoomWorker implements Runnable {
                     // todo tank移动消息处理
                     break;
             }
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             LogUntil.logger.error(e.toString());
         }
     }
@@ -108,20 +115,12 @@ public class RoomWorker implements Runnable {
      * @param roomId
      * @return
      */
-    public synchronized RoomInfo  getRoomStatus(int roomId){
+    public  RoomInfo  getRoomStatus(int roomId){
         RoomInfo roomInfo = new RoomInfo();
         roomInfo.id = roomId;
         roomInfo.count = roomHashMap.get(roomId).status;
         roomInfo.count = roomHashMap.get(roomId).playerIds.size();
         return roomInfo;
-    }
-
-    public void putMsg(MsgBase msgBase){
-        try {
-            this.pendingMsg.put(msgBase);
-        } catch (InterruptedException e){
-            LogUntil.logger.error(e.toString());
-        }
     }
 
 

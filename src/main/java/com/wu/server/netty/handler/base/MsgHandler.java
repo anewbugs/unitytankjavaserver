@@ -1,5 +1,6 @@
 package com.wu.server.netty.handler.base;
 
+import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.*;
 import com.wu.server.dao.*;
 import com.wu.server.proto.net.*;
@@ -79,11 +80,16 @@ public class MsgHandler {
             MsgReconnect msgReconnect = new MsgReconnect();
             msgReconnect.id = msg.id;
             //转发给房间工作线程  todo worker线程处理该消息
-            RoomBoss
-                    .getInstance()
-                    .findRoomWorker
-                    .get(user.roomId)
-                    .putMsg(msgReconnect);
+
+                try {
+                    DataManage.INSTANCE
+                            .findRoomWorker
+                            .get(user.roomId)
+                            .workerRoomPendingMsg
+                            .add(msgReconnect);
+                } catch (Exception e) {
+                    LogUntil.logger.error(e.toString());
+                }
         }else{
             User user = new User(msg.id,ctx.channel());
             user.playerData = playerData;

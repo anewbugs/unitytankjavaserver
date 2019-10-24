@@ -60,7 +60,7 @@ public class NetServer implements Runnable {
                         //数据封包处理Handler
                         nioSocketChannel.pipeline().addLast("LengthFieldPrepender",new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
                         //超时控制handler
-            //todo            nioSocketChannel.pipeline().addLast("ReadTimeoutHandler" , new ReadTimeoutHandler(CONNECTION_TIMEOUT_SECOND));
+                        nioSocketChannel.pipeline().addLast("ReadTimeoutHandler" , new ReadTimeoutHandler(CONNECTION_TIMEOUT_SECOND));
                         //服务器断连
                         nioSocketChannel.pipeline().addLast("ServerHandler" ,new ServerHandler());
                         //Ping消息回应

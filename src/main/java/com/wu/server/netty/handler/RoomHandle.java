@@ -3,10 +3,12 @@ package com.wu.server.netty.handler;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
+import com.wu.server.proto.net.MsgFire;
 import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import javafx.scene.layout.BorderStrokeStyle;
 
 import java.lang.reflect.Field;
 
@@ -23,8 +25,8 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                 msgbase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST) ){
             //创建房间消息转发给RoomBoss线程取处理 todo Boss线程处理该消息
             try {
-                RoomBoss.getInstance().msgPending.put(msgbase);
-            } catch (InterruptedException e) {
+                RoomBoss.getInstance().roomBossMsgPending.add(msgbase);
+            } catch (Exception e) {
                 LogUntil.logger.error(e.toString());
             }
         }else{
@@ -37,8 +39,16 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                 //通过玩家id获取user中房间id
                 int roomId =DataManage.INSTANCE.onLineUser.get(userId).roomId;
                 //将消息分发工作线程 todo 工作线程处理这些消息
-                RoomBoss.findRoomWorker.get(roomId).putMsg(msgbase);
-            } catch (NoSuchFieldException | IllegalAccessException  e) {
+                if(roomId > -1) {
+                    DataManage.INSTANCE.findRoomWorker.get(roomId).workerRoomPendingMsg.add(msgbase);
+
+                }
+                else{
+                     field = msgbase.getClass().getDeclaredField("roomId");
+                    roomId = field.getInt(msgbase);
+                    DataManage.INSTANCE.findRoomWorker.get(roomId).workerRoomPendingMsg.add(msgbase);
+                }
+            } catch (Exception e) {
                 LogUntil.logger.error(e.toString());
             }
 
