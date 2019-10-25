@@ -17,23 +17,6 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
      */
     public void close(ChannelHandlerContext ctx) throws Exception{
 
-//        Player player = ConnectionService.GetPlayer(ctx);
-//        //移除过期账户
-//        //下线
-//        if(player != null ){
-//            if(player.getRoomId() >= 0){
-//                Room room = RoomService.GetRoom(player.getRoomId());
-//                room.RemovePlayer(player.getId());
-//            }
-//            //保存数据
-//            PlayerDataDao.UpdatePlayerData(player);
-//            //移除登录信息
-//            PlayerService.RemovePlayer(ConnectionService.GetPlayer(ctx).getId());
-//        }
-//        //移除连接信息
-//        ConnectionService.RemoveClientState(ctx);
-//        ctx.close();
-        //数据保存改为工作线程做
         /**
          * 职能：
          * 1.玩家不在房间中直接移除登入信息

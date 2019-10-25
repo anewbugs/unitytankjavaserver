@@ -1,17 +1,16 @@
 package com.wu.server.room.manage.work;
 
-import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import com.wu.server.Until.LogUntil;
+import com.wu.server.bean.User;
+import com.wu.server.netty.NetManage;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.base.RoomInfo;
-import com.wu.server.proto.net.MsgGetRoomInfo;
+import com.wu.server.proto.net.*;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.base.Room;
 import com.wu.server.status.DataManage;
-
 import java.util.HashMap;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class RoomWorker implements Runnable {
    //配置
@@ -37,10 +36,8 @@ public class RoomWorker implements Runnable {
     }
     public synchronized  void removeRoom(int roomId){
         roomHashMap.remove(roomId);
+        DataManage.INSTANCE.findRoomWorker.remove(roomId);
         this.manageRoomNumber --;
-    }
-    public synchronized int getNumberOfRoom(){
-        return manageRoomNumber;
     }
 
 
@@ -52,8 +49,6 @@ public class RoomWorker implements Runnable {
     public void run() {
         LogUntil.logger.info(this.toString());
         while (!Thread.interrupted()){
-           //消息处理
-
             //消息处理
             messageProcessing();
             //ai机器人
@@ -73,42 +68,22 @@ public class RoomWorker implements Runnable {
 
             if (workerRoomPendingMsg.isEmpty())  return;
             MsgBase msgBase = workerRoomPendingMsg.poll();
-            LogUntil.logger.debug("=================================================================================");
+            LogUntil.logger.debug(this +" Receive" + msgBase);
 
-
-            LogUntil.logger.debug(msgBase.toString() +"=================================================================================");
-            System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
             switch (msgBase.protoName){
-                case MsgName.Room.MSG_GET_ROOM_INFO :
-                    //  获取房间内信息 todo test
-                    MsgGetRoomInfo msgGetRoomInfo = (MsgGetRoomInfo) msgBase;
-                    Room room = roomHashMap.get(DataManage.INSTANCE.onLineUser.get(msgGetRoomInfo.id).roomId);
-                    room.Broadcast( room.ToMsg(msgGetRoomInfo));
-                    break;
-                case MsgName.Room.MSG_ENTER_ROOM :
-                    // todo 进入房间消息处理
-
-                    break;
-                case  MsgName.Room.MSG_LEAVE_ROOM :
-                    //todo 离开房间消息处理
-                    break;
-                case MsgName.Room.MSG_START_BATTLE :
-                    //todo 开战消息处理
-                    break;
-                case MsgName.Sync.MSG_FIRE :
-                    // todo 开火消息处理
-                    break;
-                case MsgName.Sync.MSG_HIT :
-                    // todo 击中协议处理
-                    break;
-                case MsgName.Sync.MSG_SYNC_TANK :
-                    // todo tank移动消息处理
-                    break;
+                case MsgName.Room.MSG_GET_ROOM_INFO : onMsgGetRoomInfo(msgBase);    break;
+                case MsgName.Room.MSG_ENTER_ROOM :   onMsgEnterRoom(msgBase);   break;
+                case MsgName.Room.MSG_LEAVE_ROOM : onMsgLeaveRoom(msgBase); break;
+                case MsgName.Room.MSG_START_BATTLE : onMsgStartBattle(msgBase); break;
+                case MsgName.Sync.MSG_FIRE : onMsgFire(msgBase);    break;
+                case MsgName.Sync.MSG_HIT : onMsgHit(msgBase);  break;
+                case MsgName.Sync.MSG_SYNC_TANK : onMsgSyncTank(msgBase);   break;
             }
         } catch (Exception e) {
             LogUntil.logger.error(e.toString());
         }
     }
+
 
     /**
      * 获取房间状态
@@ -139,5 +114,123 @@ public class RoomWorker implements Runnable {
     private void manageRoom() {
         //todo
     }
+
+
+    //处理MsgGetRoomInfo协议
+    private void onMsgGetRoomInfo(MsgBase msgBase){
+        MsgGetRoomInfo msgGetRoomInfo = (MsgGetRoomInfo) msgBase;
+        Room room = roomHashMap.get(DataManage.INSTANCE.onLineUser.get(msgGetRoomInfo.id).roomId);
+        if(room == null ) return;
+        room.Broadcast( room.ToMsg(msgGetRoomInfo));
+    }
+
+    //处理MsgEnterRoom协议
+    private void  onMsgEnterRoom(MsgBase msgBase){
+        MsgEnterRoom msgEnterRoom = (MsgEnterRoom) msgBase;
+
+        //已经在房间中
+        if(DataManage.INSTANCE.onLineUser.get(msgEnterRoom.id).roomId > -1){
+            msgEnterRoom.result = 1;
+            NetManage.send(msgEnterRoom.id,msgEnterRoom);
+        }
+
+        //获取房间
+        Room room = roomHashMap.get(msgEnterRoom.roomId);
+        if(room == null ){
+            msgEnterRoom.result = 1;
+            NetManage.send(msgEnterRoom.id,msgEnterRoom);
+            return;
+        }
+        if (!room.AddPlayer(msgEnterRoom.id)){
+            msgEnterRoom.result = 1;
+            NetManage.send(msgEnterRoom.id,msgEnterRoom);
+            return;
+        }
+
+        msgEnterRoom.result = 0;
+        NetManage.send(msgEnterRoom.id, msgEnterRoom);
+
+    }
+
+    //处理MsgLeaveRoom协议
+    public void onMsgLeaveRoom(MsgBase msgBase){
+        MsgLeaveRoom msgLeaveRoom = (MsgLeaveRoom) msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgLeaveRoom.id);
+
+        if (user == null){
+            msgLeaveRoom.result = 1;
+            NetManage.send(msgLeaveRoom.id, msgLeaveRoom);
+            return;
+        }
+        int roomId = user.roomId;
+        Room room = roomHashMap.get(roomId);
+        if ( room == null ){
+            msgLeaveRoom.result = 1;
+            NetManage.send(msgLeaveRoom.id, msgLeaveRoom);
+            return;
+        }
+
+        if (!room.RemovePlayer(msgLeaveRoom.id)){
+            msgLeaveRoom.result = 1;
+            NetManage.send(msgLeaveRoom.id, msgLeaveRoom);
+            return;
+        }
+
+
+        //玩家为空清除房间
+        if (room.playerIds.size() == 0){
+            removeRoom(roomId);
+        }
+        msgLeaveRoom.result = 0;
+        NetManage.send(msgLeaveRoom.id,msgLeaveRoom);
+
+    }
+
+    //处理MsgStartBattle协议
+    private void onMsgStartBattle(MsgBase msgBase) {
+        MsgStartBattle msgStartBattle = (MsgStartBattle) msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgStartBattle.id);
+
+        if(user == null) return;
+        //room
+        Room room = roomHashMap.get(user.roomId);
+        if(room == null){
+            msgStartBattle.result = 1;
+            NetManage.send(user,msgStartBattle);
+            return;
+        }
+        //是否是房主
+        if(!room.isOwner(msgStartBattle.id)){
+            msgStartBattle.result = 1;
+            NetManage.send(user,msgStartBattle);
+            return;
+        }
+        //开战
+        if(!room.StartBattle()){
+            msgStartBattle.result = 1;
+            NetManage.send(user,msgStartBattle);
+            return;
+        }
+        //成功
+        msgStartBattle.result = 0;
+        NetManage.send(user,msgStartBattle);
+
+    }
+
+    //处理MsgFire协议
+    private void onMsgFire(MsgBase msgBase) {
+        //todo
+    }
+
+
+    //处理MsgHit协议
+    private void onMsgHit(MsgBase msgBase) {
+        //todo
+    }
+
+    private void onMsgSyncTank(MsgBase msgBase) {
+        //todo
+    }
+
 
 }

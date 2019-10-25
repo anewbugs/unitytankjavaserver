@@ -1,6 +1,7 @@
 package com.wu.server.netty.handler;
 
 import com.wu.server.Until.LogUntil;
+import com.wu.server.bean.User;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.net.MsgFire;
@@ -36,15 +37,18 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                 //反射获取id
                 Field field = msgbase.getClass().getField("id");
                 String userId = field.get(msgbase).toString();
+
+                User user = DataManage.INSTANCE.onLineUser.get(userId);
+                if (user == null) return;
                 //通过玩家id获取user中房间id
-                int roomId =DataManage.INSTANCE.onLineUser.get(userId).roomId;
+                int roomId =user.roomId;
                 //将消息分发工作线程 todo 工作线程处理这些消息
                 if(roomId > -1) {
                     DataManage.INSTANCE.findRoomWorker.get(roomId).workerRoomPendingMsg.add(msgbase);
 
                 }
                 else{
-                     field = msgbase.getClass().getDeclaredField("roomId");
+                    field = msgbase.getClass().getDeclaredField("roomId");
                     roomId = field.getInt(msgbase);
                     DataManage.INSTANCE.findRoomWorker.get(roomId).workerRoomPendingMsg.add(msgbase);
                 }

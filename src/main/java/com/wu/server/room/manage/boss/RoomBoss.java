@@ -6,7 +6,6 @@ import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.proto.net.MsgCreateRoom;
-import com.wu.server.proto.net.MsgFire;
 import com.wu.server.proto.net.MsgGetRoomList;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.manage.work.RoomWorker;
@@ -14,7 +13,6 @@ import com.wu.server.status.DataManage;
 
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 
@@ -23,8 +21,8 @@ public class RoomBoss implements Runnable {
    //配置
     /**********************************************************************/
     //消息处理最大量
-    private static final int THREAD_MSG_MAX = 10;
-    private static final int WORKER_NUMBER =1;
+    private static final int WORKER_NUMBER =10;
+    private static final int LEAST_WORKER_NUMBER = 10;
     /**********************************************************************/
     static int roomId = 0;
 
@@ -32,7 +30,7 @@ public class RoomBoss implements Runnable {
     //消息队列
     public MsgLine roomBossMsgPending = new MsgLine();
 
-    //工作中线程
+    //负载线程
     private static LinkedList<RoomWorker> workingRoomWorker = new LinkedList<>();
     //闲置线程
     public static ConcurrentLinkedQueue<RoomWorker> idleRoomWorker = new ConcurrentLinkedQueue<>();
@@ -61,12 +59,14 @@ public class RoomBoss implements Runnable {
     public void run() {
         while(!Thread.interrupted()){
 
-
+            //消息处理
             messageProcessing();
-            //工作线程调度
-            adjustWorkerNumber();
-            //管理findRoomWorker
-            adjustFindRoomWorker();
+            //人力资源
+            humanResource();
+            //管理负载线程
+            adjustWorkingRoomWorker();
+            //管理空闲线程
+            adjustIdleRoomWorker();
 
         }
     }
@@ -92,7 +92,7 @@ public class RoomBoss implements Runnable {
         try {
             if (this.roomBossMsgPending.isEmpty() ) return;
             MsgBase msgBase = roomBossMsgPending.poll();
-            System.out.println(this+ "---------------------------------");//todo
+            LogUntil.logger.debug(this +" Receive " + msgBase);//todo test  RoomBoss receive msg
             if (msgBase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM)){
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
                 // 创建房间逻辑 todo test
@@ -111,7 +111,7 @@ public class RoomBoss implements Runnable {
                 NetManage.send(msgCreateRoom.id , msgCreateRoom);
             }
             else if(msgBase.protoName.equals(MsgName.Room.MSG_GET_ROOM_LIST)){
-                // 获取房间消息处理  todo test
+                // 获取房间消息处理
                 MsgGetRoomList msgGetRoomList = (MsgGetRoomList) msgBase;
                 //遍历房间消息发送出去
                 msgGetRoomList.rooms = new RoomInfo[DataManage.INSTANCE.findRoomWorker.size()];
@@ -131,30 +131,49 @@ public class RoomBoss implements Runnable {
 
 
     /**
-     * 房间管理线程管理
+     *根据具体情况进行雇员和裁员
      */
-    public void adjustWorkerNumber(){
-        // todo test
-        RoomWorker roomWorker = idleRoomWorker.peek();
-        //闲置工作线程负载满额调入工作线程中
-        // todo 处理线程闲置线程空、
-
-
-
-        if (roomWorker.manageRoomNumber == roomWorker.THREAD_WORKING_ROOM_MAX){
-            workingRoomWorker.add(idleRoomWorker.poll());
+    public void humanResource(){
+        // todo need test
+        if(idleRoomWorker.size() < LEAST_WORKER_NUMBER){
+            RoomWorker roomWorker = new RoomWorker();
+            exec.execute(roomWorker);
+            idleRoomWorker.add(roomWorker);
         }
+        //TODO
+//        if (idleRoomWorker.size()>WORKER_NUMBER){
+//            RoomWorker roomWorker =idleRoomWorker.peek();
+//            if (roomWorker.manageRoomNumber == 0){
+//                idleRoomWorker.poll()                                                               ;
+//
+//            }
+//
+//        }
 
     }
 
     /**
-     * FindRoomWorker管理
+     * 管理idleRoomWorker
+     * 将负载的线程移入workingRoomWorker
+     * 不再添加房间管理
      */
-    private void adjustFindRoomWorker() {
-        //todo test
+
+    private void adjustIdleRoomWorker(){
+        RoomWorker roomWorker = idleRoomWorker.peek();
+        if (roomWorker.manageRoomNumber == roomWorker.THREAD_WORKING_ROOM_MAX){
+            workingRoomWorker.add(idleRoomWorker.poll());
+        }
+    }
+
+    /**
+     * WorkingRoomWorker管理
+     * 管理负载线程将有空闲的线程加入到闲置线程
+     */
+    private void adjustWorkingRoomWorker() {
+
         for (int i = 0; i < workingRoomWorker.size(); i++) {
            RoomWorker roomWorker = workingRoomWorker.get(i);
-           //遍历工作线程有闲置的重新加入闲置闲置线程之上
+           //遍历负载线程有空闲的的线程重新加入闲置线程之上
            if(roomWorker.manageRoomNumber < RoomWorker.THREAD_WORKING_ROOM_MAX){
                idleRoomWorker.add(roomWorker);
                workingRoomWorker.remove(i);
