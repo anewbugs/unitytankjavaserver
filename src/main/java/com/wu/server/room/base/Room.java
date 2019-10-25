@@ -362,4 +362,37 @@ public class Room {
         }
         return 0;
     }
+
+    //确认是房间内成员吗
+    public boolean isRoomMember( User user ){
+        if(!playerIds.containsKey(user.getId())){
+            user.roomId = -1;
+            user.status = Status.PREPARE;
+            user.isUser = true;
+            return false;
+        }
+
+        return true;
+    }
+    //房间玩家受到伤害
+    public boolean roomMemberAttacked(String id ){
+        RoomMember roomMember =playerIds.get(id);
+        if(roomMember == null){
+            return false;
+        }
+        roomMember.setHp(roomMember.getHp() - RoomWorker.TANK_DAMAGE);
+        return true;
+    }
+
+    //更新玩家数据
+    public boolean updateRoomMemberPosition(String id,float x , float y , float z , float ex , float ey,float ez ){
+        RoomMember roomMember =playerIds.get(id);
+        if(roomMember == null){
+            return false;
+        }
+        roomMember.setPosition(x,y,z,ex,ey,ez);
+        return true;
+    }
+
+
 }

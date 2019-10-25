@@ -1,6 +1,7 @@
 package com.wu.server.room.manage.work;
 
 import com.wu.server.Until.LogUntil;
+import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
 import com.wu.server.netty.NetManage;
 import com.wu.server.proto.base.MsgBase;
@@ -17,8 +18,8 @@ public class RoomWorker implements Runnable {
    /**********************************************************************/
     //工作线程最大工作量
     public static final int THREAD_WORKING_ROOM_MAX = 2;
-    //消息处理最大量
-    private static final int THREAD_MSG_MAX = 10;
+    //设置坦克的伤害
+    public static final int TANK_DAMAGE = 35;
     /**********************************************************************/
 
     //房间待处理消息
@@ -47,7 +48,7 @@ public class RoomWorker implements Runnable {
 
     @Override
     public void run() {
-        LogUntil.logger.info(this.toString());
+        LogUntil.logger.info("New room worker running :" + this.toString() );
         while (!Thread.interrupted()){
             //消息处理
             messageProcessing();
@@ -199,6 +200,10 @@ public class RoomWorker implements Runnable {
             NetManage.send(user,msgStartBattle);
             return;
         }
+        //checkRoomMember
+        if(!room.isRoomMember(user)){
+            return;
+        }
         //是否是房主
         if(!room.isOwner(msgStartBattle.id)){
             msgStartBattle.result = 1;
@@ -219,17 +224,89 @@ public class RoomWorker implements Runnable {
 
     //处理MsgFire协议
     private void onMsgFire(MsgBase msgBase) {
-        //todo
+        MsgFire msgFire = (MsgFire) msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgFire.id);
+        if(user == null) return;
+        //room
+        Room room = roomHashMap.get(user.roomId);
+        if(room == null){
+            return;
+        }
+        //checkRoomMember
+        if(!room.isRoomMember(user)){
+            return;
+        }
+        //status
+        if(room.status != Status.FIGHT){
+            return;
+        }
+        //广播
+        room.Broadcast(msgFire);
     }
 
 
     //处理MsgHit协议
     private void onMsgHit(MsgBase msgBase) {
-        //todo
+        MsgHit msgHit = (MsgHit)msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgHit.id);
+        if(user == null) return;
+        //targetPlayer
+        User targetPlayer = DataManage.INSTANCE.onLineUser.get(msgHit.targetId);
+        if(targetPlayer == null){
+            return;
+        }
+        //room
+        Room room = roomHashMap.get(user.roomId);
+        if(room == null){
+            return;
+        }
+        //status
+        if(room.status != Status.FIGHT){
+            return;
+        }
+        //checkRoomMember
+        if(!room.isRoomMember(user)){
+            return;
+        }
+        //状态
+        if (!room.roomMemberAttacked(msgHit.targetId)){
+            return;
+        }
+        //广播
+        msgHit.damage = TANK_DAMAGE;
+        room.Broadcast(msgHit);
+        //目标死亡后判断整个游戏胜负
+        room.Update();
     }
 
+
     private void onMsgSyncTank(MsgBase msgBase) {
-        //todo
+        MsgSyncTank msgSyncTank = (MsgSyncTank) msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgSyncTank.id);
+        if(user == null) return;
+        //room
+        Room room = roomHashMap.get(user.roomId);
+        if(room == null){
+            return;
+        }
+
+        //status
+        if(room.status != Status.FIGHT){
+            return;
+        }
+/*    //是否作弊
+    if(Math.Abs(player.x - msg.x) > 5 ||
+            Math.Abs(player.y - msg.y) > 5 ||
+            Math.Abs(player.z - msg.z) > 5){
+        System.out.println("疑似作弊 " + player.id);
+    }*/
+        //更新信息
+        if (!room.updateRoomMemberPosition( msgSyncTank.id, msgSyncTank.x, msgSyncTank.y, msgSyncTank.z, msgSyncTank.ex, msgSyncTank.ey, msgSyncTank.ez)){
+            return;
+        }
+
+        //广播
+        room.Broadcast(msgSyncTank);
     }
 
 

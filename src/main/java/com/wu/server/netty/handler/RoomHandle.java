@@ -53,7 +53,7 @@ public class RoomHandle extends ChannelInboundHandlerAdapter {
                     DataManage.INSTANCE.findRoomWorker.get(roomId).workerRoomPendingMsg.add(msgbase);
                 }
             } catch (Exception e) {
-                LogUntil.logger.error(e.toString());
+                LogUntil.logger.warn("Discard the message :" + e.toString());
             }
 
         }
