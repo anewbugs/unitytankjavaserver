@@ -31,7 +31,7 @@ public class PlayerDataDao {
             if (conn != null) {
                 stmt = conn.createStatement();
                 String sql;
-                sql = "select * FROM playerdata where iduser='"+id+"'";
+                sql = "select * FROM playerdata where binary iduser='"+id+"'";
                 rs = stmt.executeQuery(sql);
                 if(rs != null && rs.next()){
                     PlayerData playerData = new PlayerData();
@@ -108,7 +108,7 @@ public class PlayerDataDao {
      * @param user
      * @return
      */
-    public static boolean UpdatePlayerData(User user) {
+    public static void UpdatePlayerData(User user) {
         Connection conn=null;
 
         try {
@@ -126,16 +126,20 @@ public class PlayerDataDao {
                 //preStmt.setString(2, password);
                 int count =preStmt.executeUpdate();
                 preStmt.close();
-                if(count == 1)
-                    return  true;
-                else
-                    return false;
+                if(count == 1){
+                    return;
+                }
+                else{
+                    LogUntil.logger.error("Failed execute :" +sql);
+                    return;
+                }
+
             }
 
 
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            LogUntil.logger.error("Failed :" + e.toString());
+            return;
         } finally {
 
             try {
@@ -146,6 +150,5 @@ public class PlayerDataDao {
             }
 
         }
-        return false;
     }
 }

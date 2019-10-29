@@ -7,15 +7,16 @@ import com.wu.server.proto.system.MsgOffline;
 import com.wu.server.room.manage.boss.RoomBoss;
 import com.wu.server.status.DataManage;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 
-public class ServerHandler extends ChannelOutboundHandlerAdapter{
+public class ServerHandler extends ChannelInboundHandlerAdapter {
     /**
      * 连接关闭处理
      * @param ctx
      * @throws Exception
      */
-    public void close(ChannelHandlerContext ctx) throws Exception{
+    public void close(ChannelHandlerContext ctx){
 
         /**
          * 职能：
@@ -32,9 +33,11 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
                     //离线消息
                     MsgOffline msgOffline = new MsgOffline();
                     msgOffline.id = user.getId();
+                    msgOffline.roomId = user.roomId;
                     //伪装离线消息发给工作线程  TODO 由工作线程去标记离线玩家
-                     DataManage.INSTANCE.findRoomWorker.get(user.roomId).workerRoomPendingMsg.add(msgOffline);
                     user.setChannel(null);
+                    DataManage.INSTANCE.findRoomWorker.get(user.roomId).workerRoomPendingMsg.add(msgOffline);
+
             }else{
                 //移除登入消息
                 DataManage.INSTANCE.onLineUser.remove(user.getId());
@@ -58,9 +61,10 @@ public class ServerHandler extends ChannelOutboundHandlerAdapter{
         close(ctx);
     }
 
+    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         //检测用户断线
-        LogUntil.logger.error("ConnectionHandler 客户端程序关闭:"+ctx);
+        LogUntil.logger.warn("ConnectionHandler 客户端程序关闭:"+ctx);
         close(ctx);
     }
 }

@@ -11,6 +11,7 @@ public class MsgName {
         public static final String MSG_LOGIN = "MsgLogin";
         public static final String MSG_KICK = "MsgKick";
         public static final String MSG_RECONNECT = "MsgReconnect";
+        public static final String MSG_OFF_LINE = "MsgOffline"; //掉线消息
     }
     public static final class User{
         public static final String MSG_GET_ACHIEVE = "MsgGetAchieve";

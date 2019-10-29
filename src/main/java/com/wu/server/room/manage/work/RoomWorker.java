@@ -8,6 +8,7 @@ import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.proto.net.*;
+import com.wu.server.proto.system.MsgOffline;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.base.Room;
 import com.wu.server.status.DataManage;
@@ -79,11 +80,14 @@ public class RoomWorker implements Runnable {
                 case MsgName.Sync.MSG_FIRE : onMsgFire(msgBase);    break;
                 case MsgName.Sync.MSG_HIT : onMsgHit(msgBase);  break;
                 case MsgName.Sync.MSG_SYNC_TANK : onMsgSyncTank(msgBase);   break;
+                case MsgName.Login.MSG_OFF_LINE : onMsgOffline(msgBase);   break;
             }
         } catch (Exception e) {
             LogUntil.logger.error(e.toString());
         }
     }
+
+
 
 
     /**
@@ -101,7 +105,8 @@ public class RoomWorker implements Runnable {
 
 
     /**
-     * 掉线由机器人控制
+     * 接管掉线
+     * todo 掉线由机器人控制
      */
     private void robotAi() {
         //todo
@@ -113,7 +118,13 @@ public class RoomWorker implements Runnable {
      * 2.其他管理
      */
     private void manageRoom() {
-        //todo
+        if(roomHashMap.size() == 0 ) return;
+
+        for (int roomId: roomHashMap.keySet()) {
+           Room room = roomHashMap.get(roomId);
+           if (room != null && room.status == Status.FIGHT)
+               room.Update();
+        }
     }
 
 
@@ -275,8 +286,6 @@ public class RoomWorker implements Runnable {
         //广播
         msgHit.damage = TANK_DAMAGE;
         room.Broadcast(msgHit);
-        //目标死亡后判断整个游戏胜负
-        room.Update();
     }
 
 
@@ -307,6 +316,30 @@ public class RoomWorker implements Runnable {
 
         //广播
         room.Broadcast(msgSyncTank);
+    }
+
+    /**
+     * 掉线玩家处理
+     * @param msgBase
+     */
+    private void onMsgOffline(MsgBase msgBase) {
+        MsgOffline msgOffline = (MsgOffline) msgBase;
+        Room room = roomHashMap.get(msgOffline.roomId);
+        if (room == null){
+            DataManage.INSTANCE.onLineUser.remove(msgOffline.id);
+            return;
+        }
+
+        if (!room.addOfflineMember(msgOffline.id)){
+            DataManage.INSTANCE.onLineUser.remove(msgOffline.id);
+            return;
+        }
+
+
+        MsgBattleText msgBattleText = new MsgBattleText();
+        msgBattleText.reconnectText(msgOffline.id);
+        room.Broadcast(msgBattleText);
+
     }
 
 

@@ -3,6 +3,7 @@ package com.wu.server.room.base;
 import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
+import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.netty.NetManage;
 import com.wu.server.proto.net.MsgBattleResult;
 import com.wu.server.proto.net.MsgEnterBattle;
@@ -15,6 +16,7 @@ import com.wu.server.room.manage.work.RoomWorker;
 import com.wu.server.status.DataManage;
 
 import java.lang.reflect.Member;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -31,6 +33,8 @@ public class Room {
     public int maxPlayer = 6;
     //玩家列表
     public HashMap<String, RoomMember> playerIds = new HashMap<String, RoomMember>();
+    //掉线玩家索引
+    private ArrayList<String> offlineMember = new ArrayList<>();
     //房主id
     public String ownerId = "";
     //状态
@@ -156,6 +160,7 @@ public class Room {
         return true;
     }
 
+
     //选择房主
     public String SwitchOwner() {
         //选择第一个玩家
@@ -272,7 +277,7 @@ public class Room {
         //生命值
         for(String id : playerIds.keySet()) {
             RoomMember roomMember = playerIds.get(id);
-            roomMember.setHp(100);
+            roomMember.setHp(50);
         }
     }
 
@@ -313,11 +318,6 @@ public class Room {
         if(status != Status.FIGHT){
             return;
         }
-//        //时间判断
-//        if(NetManager.GetTimeStamp() - lastjudgeTime < 10f){
-//            return;
-//        }
-//        lastjudgeTime = NetManager.GetTimeStamp();
         //胜负判断
         int winCamp = Judgment();
         //尚未分出胜负
@@ -334,12 +334,17 @@ public class Room {
                 user.playerData.setWin(user.playerData.getWin() + 1);
             }
             else{ user.playerData.setLost(user.playerData.getLost() + 1);}
+            //游戏结束更新玩家数据
+            PlayerDataDao.UpdatePlayerData(user);
         }
         //发送Result
         MsgBattleResult msg = new MsgBattleResult();
         msg.winCamp = winCamp;
         Broadcast(msg);
+        //清除掉线玩家
+        cleanRoom();
     }
+
 
     //胜负判断
     public int Judgment(){
@@ -349,8 +354,8 @@ public class Room {
         for(String id : playerIds.keySet()) {
             RoomMember roomMember = playerIds.get(id);
             if(!IsDie(roomMember)){
-                if(roomMember.getCamp() == 1){count1++;};
-                if(roomMember.getCamp() == 2){count2++;};
+                if(roomMember.getCamp() == 1)   count1 ++;
+                if(roomMember.getCamp() == 2)   count2 ++;
             }
         }
         //判断
@@ -368,12 +373,12 @@ public class Room {
         if(!playerIds.containsKey(user.getId())){
             user.roomId = -1;
             user.status = Status.PREPARE;
-            user.isUser = true;
             return false;
         }
 
         return true;
     }
+
     //房间玩家受到伤害
     public boolean roomMemberAttacked(String id ){
         RoomMember roomMember =playerIds.get(id);
@@ -394,5 +399,36 @@ public class Room {
         return true;
     }
 
+    //玩家掉线处理
+    public boolean addOfflineMember(String id){
+        User user = DataManage.INSTANCE.onLineUser.get(id);
+        if (user == null) return false;
+        //判断玩家是房间成员
+        if (!isRoomMember(user)){
+            return false;
+        }
+        //判断房间状态，非战斗状态删除玩家
+        if (this.status == Status.PREPARE){
+            RemovePlayer(id);
+            return false;
+        }
 
+        user.isUser = false;
+        offlineMember.add(id);
+        return true;
+    }
+
+    /**
+     * 游戏结束清除掉线玩家
+     */
+    private void cleanRoom() {
+        for (String id : offlineMember) {
+            //清除玩家房间内数据
+            RemovePlayer(id);
+            //清除在线数据
+            DataManage.INSTANCE.onLineUser.remove(id);
+        }
+
+        offlineMember.clear();
+    }
 }

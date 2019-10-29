@@ -26,7 +26,7 @@ public class UserDao {
             if (conn != null) {
                 stmt = conn.createStatement();
                 String sql;
-                sql = "select * FROM user where iduser='"+iduser+"'";
+                sql = "select * FROM user where binary iduser='"+iduser+"'";
                 rs = stmt.executeQuery(sql);
                 return rs.next();
 
@@ -67,7 +67,7 @@ public class UserDao {
             if (conn != null) {
                 stmt = conn.createStatement();
                 String sql;
-                sql = "select * FROM user where iduser='"+iduser+"' and password ='"+password+"'";
+                sql = "select * FROM user where binary iduser='"+iduser+"' and binary password ='"+password+"'";
                 rs = stmt.executeQuery(sql);
                 return rs.next();
 

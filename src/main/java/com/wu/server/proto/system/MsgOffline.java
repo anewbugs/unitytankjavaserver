@@ -7,4 +7,5 @@ public class MsgOffline extends MsgBase {
         protoName = "MsgOffline";
     }
     public String id;
+    public int roomId;
 }
