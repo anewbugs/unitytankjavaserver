@@ -19,7 +19,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         LogUntil.logger.info(" ConnectionHandler 连接成功:"+ctx);
-        DataManage.INSTANCE.connection.put(ctx,"");
+        DataManage.INSTANCE.connection.put(ctx.channel(),"");
         ctx.fireChannelActive();
 
     }

@@ -74,7 +74,7 @@ public class MsgHandler {
             User user = DataManage.INSTANCE.onLineUser.get(msg.id);
             user.setChannel(ctx.channel());
             user.playerData = playerData;
-            DataManage.INSTANCE.connection.put(ctx,msg.id);
+            DataManage.INSTANCE.connection.put(ctx.channel(),msg.id);
             /*将重连消息转发给线程*/
             //重连消息
             MsgReconnect msgReconnect = new MsgReconnect();
@@ -90,13 +90,14 @@ public class MsgHandler {
                 } catch (Exception e) {
                     LogUntil.logger.error(e.toString());
                 }
-        }else{
-            User user = new User(msg.id,ctx.channel());
-            user.playerData = playerData;
-            DataManage.INSTANCE.onLineUser.put(msg.id,user);
-            DataManage.INSTANCE.connection.put(ctx,msg.id);
+        }else
+            {
+                 User user = new User(msg.id,ctx.channel());
+                 user.playerData = playerData;
+                 DataManage.INSTANCE.onLineUser.put(msg.id,user);
+                 DataManage.INSTANCE.connection.put(ctx.channel(),msg.id);
 
-        }
+            }
 
         //重连玩家也将该条消息
         msg.result = 0;

@@ -19,7 +19,7 @@ public class NetServer implements Runnable {
     //配置
     /**************************************************/
     //线程检查关闭时间
-    static int NETTY_SHUTDOWN_CHECKED_PERIOD = 100;
+    static final int NETTY_SHUTDOWN_CHECKED_PERIOD = 100;
     //服务器端口号
     static final int NETTY_SERVER_PORT = 8000;
     //解码配置
@@ -37,7 +37,6 @@ public class NetServer implements Runnable {
 
     @Override
     public void run() {
-        int a = 10;
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boosGroup = new NioEventLoopGroup();
         NioEventLoopGroup workerGroup = new NioEventLoopGroup();

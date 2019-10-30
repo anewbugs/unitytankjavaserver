@@ -23,9 +23,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
          * 1.玩家不在房间中直接移除登入信息
          * 2.在房间但未开始游戏中伪装离开房间消息发给该工作线程，并移除玩家所有记录
          * 3.房间开始游戏，设置isuser为false，删除连接消息
-         * 4.游戏结束让线程保存数据* TODO
+         * 4.游戏结束让线程保存数据
          * */
-        User user = DataManage.INSTANCE.onLineUser.get(ctx);
+        String userId = DataManage.INSTANCE.connection.get(ctx.channel());
+        User user = DataManage.INSTANCE.onLineUser.get(userId);
         //Channel通道关闭，清除user对象的Channel
 
         if(user != null){

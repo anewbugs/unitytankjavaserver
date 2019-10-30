@@ -97,7 +97,6 @@ public class RoomBoss implements Runnable {
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
                 // 创建房间逻辑 todo test
                 RoomWorker worker  = idleRoomWorker.peek();
-                LogUntil.logger.debug(roomId+"    "+worker);
                 //无空闲房间，重新加载
                 if (worker == null){
                     roomBossMsgPending.add(msgBase);

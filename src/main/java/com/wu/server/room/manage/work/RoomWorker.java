@@ -121,6 +121,7 @@ public class RoomWorker implements Runnable {
         if(roomHashMap.size() == 0 ) return;
 
         for (int roomId: roomHashMap.keySet()) {
+
            Room room = roomHashMap.get(roomId);
            if (room != null && room.status == Status.FIGHT)
                room.Update();
@@ -332,13 +333,17 @@ public class RoomWorker implements Runnable {
 
         if (!room.addOfflineMember(msgOffline.id)){
             DataManage.INSTANCE.onLineUser.remove(msgOffline.id);
+            //玩家为空清除房间
+            if (room.playerIds.size() == 0){
+                removeRoom(room.roomId);
+            }
             return;
         }
 
 
         MsgBattleText msgBattleText = new MsgBattleText();
         msgBattleText.reconnectText(msgOffline.id);
-        room.Broadcast(msgBattleText);
+        //room.Broadcast(msgBattleText);
 
     }
 

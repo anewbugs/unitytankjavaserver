@@ -2,7 +2,7 @@ package com.wu.server.status;
 
 import com.wu.server.bean.User;
 import com.wu.server.room.manage.work.RoomWorker;
-import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.Channel;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,7 +16,7 @@ public class DataManage
 {   //在线用户key:id,value:user
     public ConcurrentHashMap<String, User> onLineUser;
     //连接记入 key:channel,value:id
-    public ConcurrentHashMap<ChannelHandlerContext, String> connection;
+    public ConcurrentHashMap<Channel, String> connection;
     //房间和其注册的线程key:roomId,value:RoomWorker
     public  ConcurrentHashMap<Integer, RoomWorker> findRoomWorker;
 
