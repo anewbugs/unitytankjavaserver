@@ -1,0 +1,90 @@
+"nioEventLoopGroup-3-8@1989" prio=10 tid=0x1a nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0(WindowsSelectorImpl.java:-1)
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll(WindowsSelectorImpl.java:296)
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.access$400(WindowsSelectorImpl.java:278)
+	  at sun.nio.ch.WindowsSelectorImpl.doSelect(WindowsSelectorImpl.java:159)
+	  at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+	  - locked <0x7c7> (a sun.nio.ch.WindowsSelectorImpl)
+	  - locked <0x7e2> (a java.util.Collections$UnmodifiableSet)
+	  - locked <0x7e3> (a io.netty.channel.nio.SelectedSelectionKeySet)
+	  at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+	  at io.netty.channel.nio.NioEventLoop.select(NioEventLoop.java:759)
+	  at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:400)
+	  at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:873)
+	  at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:144)
+	  at java.lang.Thread.run(Thread.java:745)
+
+"nioEventLoopGroup-3-7@1988" prio=10 tid=0x19 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll0(WindowsSelectorImpl.java:-1)
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.poll(WindowsSelectorImpl.java:296)
+	  at sun.nio.ch.WindowsSelectorImpl$SubSelector.access$400(WindowsSelectorImpl.java:278)
+	  at sun.nio.ch.WindowsSelectorImpl.doSelect(WindowsSelectorImpl.java:159)
+	  at sun.nio.ch.SelectorImpl.lockAndDoSelect(SelectorImpl.java:86)
+	  - locked <0x7cc> (a sun.nio.ch.WindowsSelectorImpl)
+	  - locked <0x7dd> (a java.util.Collections$UnmodifiableSet)
+	  - locked <0x7db> (a io.netty.channel.nio.SelectedSelectionKeySet)
+	  at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:97)
+	  at io.netty.channel.nio.NioEventLoop.select(NioEventLoop.java:759)
+	  at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:400)
+	  at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:873)
+	  at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:144)
+	  at java.lang.Thread.run(Thread.java:745)
+
+"nioEventLoopGroup-3-6@1987" prio=10 tid=0x18 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-3-5@1984" prio=10 tid=0x17 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-3-4@1983" prio=10 tid=0x16 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-3-3@1982" prio=10 tid=0x15 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"mysql-cj-abandoned-connection-cleanup@1533" daemon prio=10 tid=0x14 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	 Incompatible thread state: thread not suspended
+
+"threadDeathWatcher-4-1@1386" daemon prio=1 tid=0x13 nid=NA sleeping
+  java.lang.Thread.State: TIMED_WAITING
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-3-2@1357" prio=10 tid=0x12 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-3-1@1262" prio=10 tid=0x11 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"DestroyJavaVM@1238" prio=5 tid=0x10 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"nioEventLoopGroup-2-1@1216" prio=10 tid=0xf nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"Attach Listener@1244" daemon prio=5 tid=0x5 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"Signal Dispatcher@1245" daemon prio=9 tid=0x4 nid=NA runnable
+  java.lang.Thread.State: RUNNABLE
+	 Incompatible thread state: thread not suspended
+
+"Finalizer@1246" daemon prio=8 tid=0x3 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	 Incompatible thread state: thread not suspended
+
+"Reference Handler@1247" daemon prio=10 tid=0x2 nid=NA waiting
+  java.lang.Thread.State: WAITING
+	 Incompatible thread state: thread not suspended
+
