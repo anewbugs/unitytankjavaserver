@@ -305,6 +305,22 @@ public class Room {
         return true;
     }
 
+    //重新连入
+    public MsgEnterBattle recoomectBattle(){
+        MsgEnterBattle msg = new MsgEnterBattle();
+        msg.mapId = 1;
+        msg.tanks = new TankInfo[playerIds.size()];
+
+        int i=0;
+        for(String id : playerIds.keySet()) {
+            RoomMember roomMember = playerIds.get(id);
+            msg.tanks[i] = PlayerToTankInfo(roomMember);
+            i++;
+        }
+
+        return msg;
+    }
+
 
     //是否死亡
     public boolean IsDie(RoomMember roomMember){
@@ -414,8 +430,26 @@ public class Room {
         }
 
         user.isUser = false;
-        offlineMember.add(id);
+        if (!offlineMember.contains(id))
+             offlineMember.add(id);
         return true;
+    }
+
+    public boolean removeOfflineMember(String id){
+        User user = DataManage.INSTANCE.onLineUser.get(id);
+        if (user == null) return false;
+        //判断玩家是房间成员
+        if (!isRoomMember(user)){
+            return false;
+        }
+        //判断房间状态，非战斗状态删除玩家
+        if (this.status == Status.PREPARE){
+            return false;
+        }
+
+        user.isUser = true;
+
+        return  offlineMember.remove(id);
     }
 
     /**

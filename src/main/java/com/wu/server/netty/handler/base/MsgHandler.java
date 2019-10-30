@@ -81,15 +81,13 @@ public class MsgHandler {
             msgReconnect.id = msg.id;
             //转发给房间工作线程  todo worker线程处理该消息
 
-                try {
-                    DataManage.INSTANCE
-                            .findRoomWorker
-                            .get(user.roomId)
-                            .workerRoomPendingMsg
-                            .add(msgReconnect);
-                } catch (Exception e) {
-                    LogUntil.logger.error(e.toString());
-                }
+
+            DataManage.INSTANCE
+                    .findRoomWorker
+                    .get(user.roomId)
+                    .workerRoomPendingMsg
+                    .add(msgReconnect);
+
         }else
             {
                  User user = new User(msg.id,ctx.channel());

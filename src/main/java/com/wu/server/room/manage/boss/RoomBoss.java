@@ -92,7 +92,7 @@ public class RoomBoss implements Runnable {
         try {
             if (this.roomBossMsgPending.isEmpty() ) return;
             MsgBase msgBase = roomBossMsgPending.poll();
-            LogUntil.logger.debug(this +" Receive " + msgBase);//todo test  RoomBoss receive msg
+//            LogUntil.logger.debug(this +" Receive " + msgBase);//todo test  RoomBoss receive msg
             if (msgBase.protoName.equals(MsgName.Room.MSG_CREATE_ROOM)){
                 MsgCreateRoom msgCreateRoom = (MsgCreateRoom) msgBase;
                 // 创建房间逻辑 todo test

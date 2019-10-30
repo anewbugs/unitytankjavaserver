@@ -25,7 +25,10 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
          * 3.房间开始游戏，设置isuser为false，删除连接消息
          * 4.游戏结束让线程保存数据
          * */
+
+
         String userId = DataManage.INSTANCE.connection.get(ctx.channel());
+        if (userId == null ) return;
         User user = DataManage.INSTANCE.onLineUser.get(userId);
         //Channel通道关闭，清除user对象的Channel
 
@@ -44,7 +47,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
                 DataManage.INSTANCE.onLineUser.remove(user.getId());
             }
         }
-        DataManage.INSTANCE.connection.remove(ctx);
+        DataManage.INSTANCE.connection.remove(ctx.channel());
         ctx.close();
 
     }
@@ -58,7 +61,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         //捕获超时异常
-        LogUntil.logger.warn("ConnectionHandler 连接超时:"+cause);
+        LogUntil.logger.warn("ConnectionHandler 连接超时:"+cause + ctx);
         close(ctx);
     }
 

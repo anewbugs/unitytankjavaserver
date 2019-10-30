@@ -9,6 +9,7 @@ import com.wu.server.proto.base.MsgName;
 import com.wu.server.proto.base.RoomInfo;
 import com.wu.server.proto.net.*;
 import com.wu.server.proto.system.MsgOffline;
+import com.wu.server.proto.system.MsgReconnect;
 import com.wu.server.room.base.MsgLine;
 import com.wu.server.room.base.Room;
 import com.wu.server.status.DataManage;
@@ -70,7 +71,7 @@ public class RoomWorker implements Runnable {
 
             if (workerRoomPendingMsg.isEmpty())  return;
             MsgBase msgBase = workerRoomPendingMsg.poll();
-            LogUntil.logger.debug(this +" Receive" + msgBase);
+// todo            LogUntil.logger.debug(this +" Receive" + msgBase);
 
             switch (msgBase.protoName){
                 case MsgName.Room.MSG_GET_ROOM_INFO : onMsgGetRoomInfo(msgBase);    break;
@@ -81,12 +82,13 @@ public class RoomWorker implements Runnable {
                 case MsgName.Sync.MSG_HIT : onMsgHit(msgBase);  break;
                 case MsgName.Sync.MSG_SYNC_TANK : onMsgSyncTank(msgBase);   break;
                 case MsgName.Login.MSG_OFF_LINE : onMsgOffline(msgBase);   break;
+                case MsgName.Login.MSG_RECONNECT : onMsgReconnect(msgBase); break;
+                default: return;
             }
         } catch (Exception e) {
             LogUntil.logger.error(e.toString());
         }
     }
-
 
 
 
@@ -98,7 +100,7 @@ public class RoomWorker implements Runnable {
     public  RoomInfo  getRoomStatus(int roomId){
         RoomInfo roomInfo = new RoomInfo();
         roomInfo.id = roomId;
-        roomInfo.count = roomHashMap.get(roomId).status;
+        roomInfo.status = roomHashMap.get(roomId).status;
         roomInfo.count = roomHashMap.get(roomId).playerIds.size();
         return roomInfo;
     }
@@ -145,6 +147,7 @@ public class RoomWorker implements Runnable {
         if(DataManage.INSTANCE.onLineUser.get(msgEnterRoom.id).roomId > -1){
             msgEnterRoom.result = 1;
             NetManage.send(msgEnterRoom.id,msgEnterRoom);
+            return;
         }
 
         //获取房间
@@ -345,6 +348,23 @@ public class RoomWorker implements Runnable {
         msgBattleText.reconnectText(msgOffline.id);
         //room.Broadcast(msgBattleText);
 
+    }
+
+    private void onMsgReconnect(MsgBase msgBase) {
+        MsgReconnect msgReconnect = (MsgReconnect) msgBase;
+        User user = DataManage.INSTANCE.onLineUser.get(msgReconnect.id);
+        if(user == null) return;
+        //room
+        Room room = roomHashMap.get(user.roomId);
+        if(room == null){
+            return;
+        }
+
+        if(!room.removeOfflineMember(user.getId())){
+            return;
+        }
+
+        NetManage.send(user,room.recoomectBattle());
     }
 
 
