@@ -7,8 +7,6 @@ import com.wu.server.room.manage.boss.RoomBoss;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-
 public class Main {
     //房间轮询时间
     static final int ADJUSTMENT_PERIOD = 10;
