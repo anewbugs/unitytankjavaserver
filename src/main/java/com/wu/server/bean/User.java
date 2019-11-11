@@ -28,4 +28,15 @@ public class User {
         this.channel = channel;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", channel=" + channel +
+                ", status=" + status +
+                ", isUser=" + isUser +
+                ", roomId=" + roomId +
+                ", playerData=" + playerData +
+                '}';
+    }
 }
