@@ -1,6 +1,7 @@
 package com.wu.server.navmesh.mesh;
 
-import navtest.config.PointConfig;
+
+import com.wu.server.navmesh.config.PointConfig;
 
 public class Point {
     public float x ;

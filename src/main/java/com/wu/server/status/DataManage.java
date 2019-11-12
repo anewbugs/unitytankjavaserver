@@ -1,9 +1,9 @@
 package com.wu.server.status;
 
 import com.wu.server.bean.User;
+import com.wu.server.navmesh.mesh.NavMeshInfo;
 import com.wu.server.room.manage.work.RoomWorker;
 import io.netty.channel.Channel;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -19,11 +19,14 @@ public class DataManage
     public ConcurrentHashMap<Channel, String> connection;
     //房间和其注册的线程key:roomId,value:RoomWorker
     public  ConcurrentHashMap<Integer, RoomWorker> findRoomWorker;
+    //地图数据资源
+    public ConcurrentHashMap<Integer, NavMeshInfo> map;
 
     public DataManage() {
         onLineUser = new ConcurrentHashMap<>();
         connection = new ConcurrentHashMap<>();
         findRoomWorker = new ConcurrentHashMap<>();
+        map = new ConcurrentHashMap<>();
 
     }
     public static final DataManage INSTANCE = new DataManage();

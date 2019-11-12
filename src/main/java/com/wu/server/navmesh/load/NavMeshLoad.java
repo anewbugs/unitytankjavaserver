@@ -1,8 +1,9 @@
 package com.wu.server.navmesh.load;
 
-import navtest.mesh.NavMeshInfo;
-import navtest.mesh.Point;
-import navtest.mesh.Triangle;
+import com.wu.server.navmesh.mesh.NavMeshInfo;
+import com.wu.server.navmesh.mesh.Point;
+import com.wu.server.navmesh.mesh.Triangle;
+
 
 import java.io.*;
 import java.util.ArrayList;

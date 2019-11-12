@@ -12,7 +12,7 @@ import java.util.List;
 public class Route {
     public NavMeshInfo navMeshInfo;
     public LinkedList<Triangle> viaTriangle = new LinkedList<Triangle>();
-    public List viaPoint = new ArrayList<Point>(); //todo 路径 优化使用
+    public List viaPoint = new ArrayList<Point>(); //todo 璺緞 浼樺寲浣跨敤
 
     public Point startPoint;
     public Point endPoint;

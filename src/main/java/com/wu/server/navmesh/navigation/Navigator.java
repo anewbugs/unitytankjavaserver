@@ -6,10 +6,10 @@ import com.wu.server.navmesh.mesh.Triangle;
 import java.util.*;
 
 /**
- * µ¼º½ÒÇ
+ * å¯¼èˆªä»ª
  */
 public class Navigator {
-    Queue<Node> openList = new PriorityQueue<Node>(); // ÓÅÏÈ¶ÓÁĞ(ÉıĞò) ¸ù¾İÕâ¸ö½Ó¿ÚComparable
+    Queue<Node> openList = new PriorityQueue<Node>(); // ä¼˜å…ˆé˜Ÿåˆ—(å‡åº) æ ¹æ®è¿™ä¸ªæ¥å£Comparable
     List<Node> closeList = new ArrayList<Node>();
     Route route;
 
@@ -18,21 +18,21 @@ public class Navigator {
     }
 
     /**
-     * ¿ªÊ¼Ñ°Â·
+     * å¼€å§‹å¯»è·¯
      *
      */
     public void start(Route route){
         if (route.navMeshInfo == null) {
-            // todo ´òÓ¡±¨´íÈÕÖ¾
+            // todo æ‰“å°æŠ¥é”™æ—¥å¿—
             return;
         }
 
-        //³õÊ¼»¯
+        //åˆå§‹åŒ–
         this.route = route;
         openList.clear();
         closeList.clear();
 
-        //¿ªÊ¼
+        //å¼€å§‹
         openList.add(new Node(route.startTriangle,route.getH(route.startTriangle)));
         moveNodes();
         route.init();
@@ -43,7 +43,7 @@ public class Navigator {
             if (route.endNode != null) return;
             Node node = openList.poll();
             closeList.add(node);
-            //Ñ°Â·½áÊø
+            //å¯»è·¯ç»“æŸ
             if (route.isEnd(node)){
                 route.endNode =node;
                 break;
@@ -52,9 +52,9 @@ public class Navigator {
             Explore(node);
         }
     }
-    //ÁÚ½ÓÈı½ÇĞÎÌ½Ë÷
+    //é‚»æ¥ä¸‰è§’å½¢æ¢ç´¢
     private void Explore(Node node) {
-        //»ñÈ¡ÁÚ½ÓÈı½ÇĞÎ
+        //è·å–é‚»æ¥ä¸‰è§’å½¢
         HashSet<Triangle> contiguousTriangle = new HashSet<Triangle>();
 //        contiguousTriangle.addAll(route.navMeshInfo.pointIndexes.get(node.triangle.a));
 //        contiguousTriangle.addAll(route.navMeshInfo.pointIndexes.get(node.triangle.b));
@@ -65,12 +65,12 @@ public class Navigator {
         contiguousTriangle.addAll(route.navMeshInfo.edgeIndexes.get(Point.midpointString(node.triangle.a, node.triangle.c)));
         contiguousTriangle.addAll(route.navMeshInfo.edgeIndexes.get(Point.midpointString(node.triangle.b, node.triangle.c)));
 
-        //´¦ÀíÁÚ½ÓÈı½ÇĞÎ
+        //å¤„ç†é‚»æ¥ä¸‰è§’å½¢
 
         for (Triangle triangle : contiguousTriangle) {
-            //È¥µôµ±Ç°Èı½ÇĞÎ
+            //å»æ‰å½“å‰ä¸‰è§’å½¢
             if (triangle.equals(node.triangle))  continue;
-            //È¥µôcloseList±í
+            //å»æ‰closeListè¡¨
             if (closeListContains(triangle))   continue;
 
             Node child = findNodeInOpen(triangle);
@@ -78,17 +78,17 @@ public class Navigator {
                 child = new Node(triangle,node,route.getH(triangle));
 
                 openList.add(child);
-                //ÕÒµ½³öÂ·½áÊø
+                //æ‰¾åˆ°å‡ºè·¯ç»“æŸ
 //                if (route.endTriangle.equals(triangle)){
 //                    route.endNode = child;
 //                    return;
 //                }
             }else{
-                //ÅĞ¶ÏÊÇ·ñĞŞ¸Ä¸¸½Úµã
+                //åˆ¤æ–­æ˜¯å¦ä¿®æ”¹çˆ¶èŠ‚ç‚¹
                 float G = node.calculateG(triangle);
                 float H = route.getH(triangle);
                 if (G + H < child.G + child.H){
-                    //ĞŞ¸Ä
+                    //ä¿®æ”¹
                     child.parentNode = node;
                     child.G = G;
                     child.H = H;
@@ -100,7 +100,7 @@ public class Navigator {
 
     }
 
-    //ÅĞ¶ÏÊÇÒÑ¾­¹Ø±ÕµÄ½ÚµãÂğ
+    //åˆ¤æ–­æ˜¯å·²ç»å…³é—­çš„èŠ‚ç‚¹å—
     private boolean closeListContains(Triangle triangle){
         if (closeList.isEmpty())  return false;
 

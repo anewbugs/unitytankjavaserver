@@ -57,6 +57,7 @@ public class RoomBoss implements Runnable {
 
     @Override
     public void run() {
+        LogUntil.logger.info("房间管理线程启动********************************");
         while(!Thread.interrupted()){
 
             //消息处理

@@ -50,7 +50,7 @@ public class RoomWorker implements Runnable {
 
     @Override
     public void run() {
-        LogUntil.logger.info("New room worker running :" + this.toString() );
+        LogUntil.logger.info("工作线程启动***************************");
         while (!Thread.interrupted()){
             //消息处理
             messageProcessing();

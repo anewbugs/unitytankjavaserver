@@ -75,6 +75,7 @@ public class NetServer implements Runnable {
                     }
                 });
         bind(serverBootstrap,NETTY_SERVER_PORT);
+        LogUntil.logger.info("网络服务启动*********************************");
 
 
         while(!Thread.interrupted()){
