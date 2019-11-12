@@ -12,8 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * *onLineUser记录登入后的玩家,在游戏中掉线的玩家
  * *当玩家下线以后,先删除连接玩家在根据玩家状态删除或“标记”
  */
-public class DataManage
-{   //在线用户key:id,value:user
+
+public class DataManage {
+    public static int number = 1;
+
+    //在线用户key:id,value:user
     public ConcurrentHashMap<String, User> onLineUser;
     //连接记入 key:channel,value:id
     public ConcurrentHashMap<Channel, String> connection;
@@ -28,6 +31,11 @@ public class DataManage
         findRoomWorker = new ConcurrentHashMap<>();
         map = new ConcurrentHashMap<>();
 
+    }
+
+    public void addMap(NavMeshInfo navMeshInfo){
+        map.put(number,navMeshInfo);
+        number ++ ;
     }
     public static final DataManage INSTANCE = new DataManage();
 

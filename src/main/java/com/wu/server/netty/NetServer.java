@@ -95,9 +95,9 @@ public class NetServer implements Runnable {
 
         serverBootstrap.bind(port).addListener(future -> {
             if (future.isSuccess()) {
-                System.out.println("端口[" + port + "]绑定成功!");
+                LogUntil.logger.info("端口[" + port + "]绑定成功!");
             } else {
-                System.err.println("端口[" + port + "]绑定失败!");
+                LogUntil.logger.info("端口[" + port + "]绑定失败!");
             }
         });
     }

@@ -307,15 +307,15 @@ public class RoomWorker implements Runnable {
         if(room.status != Status.FIGHT){
             return;
         }
-/*    //是否作弊
-    if(Math.Abs(player.x - msg.x) > 5 ||
-            Math.Abs(player.y - msg.y) > 5 ||
-            Math.Abs(player.z - msg.z) > 5){
-        System.out.println("疑似作弊 " + player.id);
-    }*/
-        //更新信息
-        if (!room.updateRoomMemberPosition( msgSyncTank.id, msgSyncTank.x, msgSyncTank.y, msgSyncTank.z, msgSyncTank.ex, msgSyncTank.ey, msgSyncTank.ez)){
+
+        //checkRoomMember
+        if(!room.isRoomMember(user)){
             return;
+        }
+        //数据验证
+        if(!room.dataValidation(msgSyncTank)){
+            msgSyncTank.result = 1;
+
         }
 
         //广播

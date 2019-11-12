@@ -1,8 +1,11 @@
 package com.wu.server;
 
 import com.wu.server.Until.LogUntil;
+import com.wu.server.navmesh.load.NavMeshLoad;
+import com.wu.server.navmesh.mesh.NavMeshInfo;
 import com.wu.server.netty.NetServer;
 import com.wu.server.room.manage.boss.RoomBoss;
+import com.wu.server.status.DataManage;
 
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +21,9 @@ public class Main {
         ExecutorService exec = Executors.newCachedThreadPool();
         //初始化
         RoomBoss.init(exec,ADJUSTMENT_PERIOD);
+        //加载地图资源
+        NavMeshInfo navMeshInfo = new NavMeshLoad().load("Mian.obj");
+        DataManage.INSTANCE.addMap(navMeshInfo);
         //RoomBoss线程跑起来
         exec.execute(RoomBoss.getInstance());
         //通信线程跑起来

@@ -15,4 +15,7 @@ public class MsgSyncTank extends MsgBase {
     public float gunX = 0f;
     //服务端补充
     public String id = "";		//哪个坦克
+    //数据判断使用
+    public int result = 0;
+
 }

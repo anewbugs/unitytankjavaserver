@@ -4,11 +4,9 @@ import com.wu.server.Until.LogUntil;
 import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
 import com.wu.server.dao.PlayerDataDao;
+import com.wu.server.navmesh.mesh.Point;
 import com.wu.server.netty.NetManage;
-import com.wu.server.proto.net.MsgBattleResult;
-import com.wu.server.proto.net.MsgEnterBattle;
-import com.wu.server.proto.net.MsgGetRoomInfo;
-import com.wu.server.proto.net.MsgLeaveBattle;
+import com.wu.server.proto.net.*;
 import com.wu.server.proto.base.MsgBase;
 import com.wu.server.proto.base.PlayerInfo;
 import com.wu.server.proto.base.TankInfo;
@@ -37,10 +35,9 @@ public class Room {
     private ArrayList<String> offlineMember = new ArrayList<>();
     //房主id
     public String ownerId = "";
-    //状态
-//    public enum Status {
-//        PREPARE, FIGHT
-//    }
+    //游戏地图  ps:地图只有一张
+    public int mapNumber = 1;
+
     public volatile int status = Status.PREPARE;
     //出生点位置配置
     static float[][][] birthConfig =  {
@@ -464,5 +461,28 @@ public class Room {
         }
 
         offlineMember.clear();
+    }
+
+
+    public boolean dataValidation(MsgSyncTank msgSyncTank){
+        RoomMember roomMember =playerIds.get(msgSyncTank.id);
+
+        //位置可达性验证
+        if (DataManage.INSTANCE.map.get(mapNumber).getTriangleByPoint(new Point(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z)) == null
+                &&(Math.abs(roomMember.getX() - msgSyncTank.x) > 5 ||
+                Math.abs(roomMember.getY() - msgSyncTank.y) > 5 ||
+                Math.abs(roomMember.getEz() - msgSyncTank.z) > 5)){
+            msgSyncTank.x = roomMember.getX();
+            msgSyncTank.y = roomMember.getY();
+            msgSyncTank.z = roomMember.getZ();
+            msgSyncTank.ex = roomMember.getEx();
+            msgSyncTank.ey = roomMember.getEy();
+            msgSyncTank.ez = roomMember.getEz();
+            return false;
+        }
+
+
+        roomMember.setPosition(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z,msgSyncTank.ex,msgSyncTank.ey,msgSyncTank.ez);
+        return true;
     }
 }
