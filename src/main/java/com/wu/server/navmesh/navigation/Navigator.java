@@ -22,8 +22,13 @@ public class Navigator {
      *
      */
     public void start(Route route){
-        if (route.navMeshInfo == null) {
+        if (route.navMeshInfo == null ) {
             // todo 打印报错日志
+            return;
+        }
+
+        if (route.startTriangle.equals(route.endTriangle)){
+            route.viaTriangle.addFirst(route.startTriangle);
             return;
         }
 

@@ -20,7 +20,7 @@ public class Route {
     public Triangle endTriangle ;
     public Node endNode = null;
 
-    public Route(NavMeshInfo navMeshInfo, Point startPoint, Point endPoint, Triangle startTriangle, Triangle endTriangle) {
+    private Route(NavMeshInfo navMeshInfo, Point startPoint, Point endPoint, Triangle startTriangle, Triangle endTriangle) {
         this.navMeshInfo = navMeshInfo;
         this.startPoint = startPoint;
         this.endPoint = endPoint;

@@ -39,4 +39,12 @@ public class Point {
 
         return x + " " + y + " " + z;
     }
+
+    public static Point unitVector(Point A ,Point B){
+        Point point = new Point(B.x - A.x,B.y - A.y,B.z -A.z);
+        float distance = (float) Math.sqrt(Math.pow(B.x - A.x , 2) + Math.pow(B.z - A.z ,2));
+        point.x /= distance;
+        point.z /= distance;
+        return point;
+    }
 }

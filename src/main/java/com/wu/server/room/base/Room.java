@@ -5,6 +5,8 @@ import com.wu.server.bean.Status;
 import com.wu.server.bean.User;
 import com.wu.server.dao.PlayerDataDao;
 import com.wu.server.navmesh.mesh.Point;
+import com.wu.server.navmesh.navigation.Navigator;
+import com.wu.server.navmesh.navigation.Route;
 import com.wu.server.netty.NetManage;
 import com.wu.server.proto.net.*;
 import com.wu.server.proto.base.MsgBase;
@@ -12,13 +14,13 @@ import com.wu.server.proto.base.PlayerInfo;
 import com.wu.server.proto.base.TankInfo;
 import com.wu.server.room.manage.work.RoomWorker;
 import com.wu.server.status.DataManage;
-
-import java.lang.reflect.Member;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 
 public class Room {
+
+    public static final float Hit_DISTANCE = 6;
+
     public Room(int roomId ,String ownerId) {
         this.roomId = roomId;
         this.ownerId = ownerId;
@@ -115,7 +117,7 @@ public class Room {
     }
 
     //是不是房主
-    public boolean isOwner(String id){
+    public boolean isOwner( String id){
         return id.equals(ownerId);
     }
 
@@ -393,24 +395,29 @@ public class Room {
     }
 
     //房间玩家受到伤害
-    public boolean roomMemberAttacked(String id ){
-        RoomMember roomMember =playerIds.get(id);
+    public boolean roomMemberAttacked(MsgHit msgHit){
+        RoomMember roomMember =playerIds.get(msgHit.targetId);
         if(roomMember == null){
             return false;
         }
+        //炮弹击中验证
+        if (Math.pow(roomMember.getX() - msgHit.x , 2) + Math.pow(roomMember.getY() - msgHit.y , 2) +Math.pow(roomMember.getZ() - msgHit.z ,2)  > Hit_DISTANCE){
+            return false;
+        }
+
         roomMember.setHp(roomMember.getHp() - RoomWorker.TANK_DAMAGE);
         return true;
     }
 
-    //更新玩家数据
-    public boolean updateRoomMemberPosition(String id,float x , float y , float z , float ex , float ey,float ez ){
-        RoomMember roomMember =playerIds.get(id);
-        if(roomMember == null){
-            return false;
-        }
-        roomMember.setPosition(x,y,z,ex,ey,ez);
-        return true;
-    }
+//    //更新玩家数据
+//    public boolean updateRoomMemberPosition(String id,float x , float y , float z , float ex , float ey,float ez ){
+//        RoomMember roomMember =playerIds.get(id);
+//        if(roomMember == null){
+//            return false;
+//        }
+//        roomMember.setPosition(x,y,z,ex,ey,ez);
+//        return true;
+//    }
 
     //玩家掉线处理
     public boolean addOfflineMember(String id){
@@ -463,15 +470,14 @@ public class Room {
         offlineMember.clear();
     }
 
-
+    //对服务器发过来数据验证
     public boolean dataValidation(MsgSyncTank msgSyncTank){
         RoomMember roomMember =playerIds.get(msgSyncTank.id);
-
         //位置可达性验证
         if (DataManage.INSTANCE.map.get(mapNumber).getTriangleByPoint(new Point(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z)) == null
-                &&(Math.abs(roomMember.getX() - msgSyncTank.x) > 5 ||
+                ||(Math.abs(roomMember.getX() - msgSyncTank.x) > 5 ||
                 Math.abs(roomMember.getY() - msgSyncTank.y) > 5 ||
-                Math.abs(roomMember.getEz() - msgSyncTank.z) > 5)){
+                Math.abs(roomMember.getZ() - msgSyncTank.z) > 5)){
             msgSyncTank.x = roomMember.getX();
             msgSyncTank.y = roomMember.getY();
             msgSyncTank.z = roomMember.getZ();
@@ -485,4 +491,52 @@ public class Room {
         roomMember.setPosition(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z,msgSyncTank.ex,msgSyncTank.ey,msgSyncTank.ez);
         return true;
     }
+
+    // todo 掉线托管
+    public void trusteeshipTriangle() {
+
+        for (String s : offlineMember) {
+            RoomMember roomMember = playerIds.get(s);
+            //获取目标玩家
+            RoomMember target = null;
+            for (RoomMember value : playerIds.values()) {
+                if (value.getCamp() != roomMember.getCamp() && value.getHp() > 0){
+                    target = value;
+                    break;
+                }
+            }
+           if (Math.sqrt(Math.pow(roomMember.getX() - target.getX() ,2) +Math.pow(roomMember.getZ() - roomMember.getZ(),2)) > 5){
+               Route route = Route.routeFactory(DataManage.INSTANCE.map.get(mapNumber),new Point(roomMember.getX(),roomMember.getY(),roomMember.getZ()),new Point(target.getX(),target.getY(),target.getZ()));
+               new Navigator().start(route);
+               Point point=null;
+               if (route.viaTriangle.size() > 1){
+                   point= route.viaTriangle.get(1).centroid;
+               }else {
+                   point = route.endPoint;
+               }
+               Point vector = Point.unitVector(route.startPoint,point);
+               MsgSyncTank msgSyncTank = new MsgSyncTank();
+               if (route.startPoint.getDistance(point) <1){
+                   msgSyncTank.id = roomMember.getId();
+                   msgSyncTank.x = roomMember.getX() + vector.x;
+                   msgSyncTank.y = roomMember.getY() ;
+                   msgSyncTank.z = roomMember.getZ() + vector.z;
+                   msgSyncTank.ey = - (float) Math.toDegrees(Math.atan(vector.z /vector.x));
+                   msgSyncTank.result = 0;
+               }else{
+                   msgSyncTank.id = roomMember.getId();
+                   msgSyncTank.x = point.x;
+                   msgSyncTank.y = point.y ;
+                   msgSyncTank.z = point.z;
+                   msgSyncTank.ey = - (float) Math.toDegrees(Math.atan(vector.z /vector.x));
+                   msgSyncTank.result = 0;
+               }
+               Broadcast(msgSyncTank);
+               roomMember.setPosition(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z,msgSyncTank.ex,msgSyncTank.ey,msgSyncTank.ez);
+               System.out.println(msgSyncTank);
+           }
+        }
+    }
+
+
 }

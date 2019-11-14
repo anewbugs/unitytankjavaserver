@@ -110,8 +110,14 @@ public class RoomWorker implements Runnable {
      * 接管掉线
      * todo 掉线由机器人控制
      */
+    public long t = 0;
     private void robotAi() {
-        //todo
+        if (System.currentTimeMillis() - t < 1000) return;
+        t = System.currentTimeMillis();
+        for (Room room : roomHashMap.values()) {
+            if (room.status == Status.PREPARE)  continue;
+            room.trusteeshipTriangle();
+        }
     }
 
     /**
@@ -284,7 +290,7 @@ public class RoomWorker implements Runnable {
             return;
         }
         //状态
-        if (!room.roomMemberAttacked(msgHit.targetId)){
+        if (!room.roomMemberAttacked(msgHit)){
             return;
         }
         //广播
