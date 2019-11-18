@@ -1,0 +1,138 @@
+tank游戏服务器
+   1. server-package介绍:
+        ├─java
+        │  └─com
+        │      └─wu
+        │          └─server
+        │              ├─bean --------------玩家属性
+        │              ├─dao  --------------数据库操作
+        │              ├─main --------------服务器启动入口
+        │              ├─navmesh -----------地图资源加载，构建地图三角网格，寻路算法
+        │              │  ├─config ---------地图参数
+        │              │  ├─load -----------加载unity导出地图数据Mian.obj（顶点f、索引f），生成mesh
+        │              │  ├─mesh -----------地图类、寻路的基础、可行判断
+        │              │  └─navigation -----寻路实现、
+        │              ├─netty -------------消息服务
+        │              │  └─handler --------消息处理和转发
+        │              │      └─base -------登入消息和基类消息处理
+        │              ├─proto -------------通信协议
+        │              │  ├─base -----------协议的父类和基类
+        │              │  ├─net  -----------与客户端通信协议
+        │              │  └─system ---------服务器内部通信协议
+        │              ├─room --------------多线程房间管理
+        │              │  ├─base -----------基类，包括房间对象和、房间成员对象和消息队列
+        │              │  └─manage ---------线程管理房间
+        │              │      ├─boss -------管理线程，管理工作线程（管理房间的注册）
+        │              │      └─work -------工作线程，管理房间（通过配置可管理多个房间）
+        │              ├─status ------------共享数据包括在线玩家、和地图数据
+        │              └─Until -------------工具类，包括数据库连接和日志打印
+        └─resources ------------------------资源文件:地图志愿、日志配置
+
+    2.项目用到的jar包是用maven配置
+
+    3.模块和一些功能
+
+        （1）通信模块，使用netty
+            //连接处理Handler
+            nioSocketChannel.pipeline().addLast("ConnectionHandler",new ConnectionHandler());
+            //消息长度处里Handler 解决半包和粘包问题
+            nioSocketChannel.pipeline().addLast("LengthFieldBasedFrameDecoder", new LengthFieldBasedFrameDecoder(MAX_FRAME_LENGTH,LENGTH_FIELD_OFFSET,LENGTH_FIELD_LENGTH,LENGTH_ADJUSTMENT,INITIAL_BYTES_TO_STRIP));
+            //数据封包处理Handler
+            nioSocketChannel.pipeline().addLast("LengthFieldPrepender",new LengthFieldPrepender(LENGTH_FIELD_LENGTH));
+            //超时控制handler
+            nioSocketChannel.pipeline().addLast("ReadTimeoutHandler" , new ReadTimeoutHandler(CONNECTION_TIMEOUT_SECOND));
+            //服务器断连
+            nioSocketChannel.pipeline().addLast("ServerHandler" ,new ServerHandler());
+            //Ping消息回应
+            nioSocketChannel.pipeline().addLast("PingHandle", new PingHandle());
+            //登入消息处理
+            nioSocketChannel.pipeline().addLast("LoginHandle" , new LoginHandle());
+            //玩家数据获取
+            nioSocketChannel.pipeline().addLast("UserHandle",new UserHandle());
+           //房间消息管理和转发
+            nioSocketChannel.pipeline().addLast("RoomHandle" , new RoomHandle());
+
+        （2）客户端连接处理
+             *登陆注册
+
+             *掉线处理： 1)未在房间中，直接删除所有在线信息
+                       2)在游戏房间中： a.房间状态-PREPARE 退出房间、再删除所有在线信息
+                                      b.房间状态-FIGHT 房间内掉线玩家列表中加入玩家信息，删除客户端连接信息，
+                                    在线队列中加入标记（该局游戏结束后会做清算处理）
+             *游戏重连处理： 1）登入时按正常协议处理回消息但回发给system消息给对应的房间工作线程，但在创建房间
+                         和进入房间时相应的判断会会失败消息给客户端，房间线程接到后判断后回MsgEnterBattle给该客户端
+
+        （3）多线程管理房间
+             *boss线程
+                            //消息处理
+                            messageProcessing();
+                            //人力资源
+                            humanResource();
+                            //管理负载线程
+                            adjustWorkingRoomWorker();
+                            //管理空闲线程
+                            adjustIdleRoomWorker();
+
+                    1）消息处理主要时管理房间创建并注册到空闲线程上
+                    2）人力资源空闲线程不够时雇佣新的线程
+                    3）管理负载线程，负载线程空出资源，将其加入空闲线程中
+                    4）管理空闲线程，与上文相反
+
+             *work线程
+                        //消息处理
+                        messageProcessing();
+                        //ai机器人
+                        robotAi();
+                        //房间管理的房间游戏状态：判断游戏结束
+                        manageRoom();
+
+
+                   1）消息处理主要处理房间消息和战斗消息
+                   2）ai机器人，掉线玩家由该控制（寻路），调用寻路模块中求出路线并显示
+                   3）各房间游戏状态管理，并清算掉线玩家
+
+        （4）战斗模块（主要在work的room，没有分化出来）
+
+                        switch (msgBase.protoName){
+                            case MsgName.Room.MSG_GET_ROOM_INFO : onMsgGetRoomInfo(msgBase);    break;
+                            case MsgName.Room.MSG_ENTER_ROOM :   onMsgEnterRoom(msgBase);   break;
+                            case MsgName.Room.MSG_LEAVE_ROOM : onMsgLeaveRoom(msgBase); break;
+                            case MsgName.Room.MSG_START_BATTLE : onMsgStartBattle(msgBase); break;
+                            case MsgName.Sync.MSG_FIRE : onMsgFire(msgBase);    break;
+                            case MsgName.Sync.MSG_HIT : onMsgHit(msgBase);  break;
+                            case MsgName.Sync.MSG_SYNC_TANK : onMsgSyncTank(msgBase);   break;
+                            case MsgName.Login.MSG_OFF_LINE : onMsgOffline(msgBase);   break;
+                            case MsgName.Login.MSG_RECONNECT : onMsgReconnect(msgBase); break;
+                            default: return;
+                        }
+             *主要时各种消息处理
+
+             *玩家数据同步策略（防作弊）
+                1）位置同步
+                        public class MsgSyncTank extends MsgBase {
+                            public MsgSyncTank() {protoName = "MsgSyncTank";}
+                            //位置、旋转、炮塔旋转
+                            public float x = 0f;
+                            public float y = 0f;
+                            public float z = 0f;
+                            public float ex = 0f;
+                            public float ey = 0f;
+                            public float ez = 0f;
+                            public float turretY = 0f;
+                            public float gunX = 0f;
+                            //服务端补充
+                            public String id = "";		//哪个坦克
+                            //数据判断使用  0 成功  1 失败
+                            public int result = 0;
+
+                        }
+                    未防止卡顿，接收到该消息时客户端已经移动打该位置了，战斗莫块收到该消息时用寻路模块判断该位置在三角网格上（可到达）
+                  并判断与服务器存的位置相差距离。
+                        数据可行，将消息组播给该房间成员，并存入服务器中
+                        数据不可行，将该消息改为服务器数据，并将result = 1，组播并打印该条日志
+
+
+        （5）寻路模块
+              *调用接口：地图读取（用与服务器初始化加载地图数据数据）、A*寻路、根据点返回所在三角网格（用于客户端发来数据验证）
+
+

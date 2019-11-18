@@ -112,7 +112,7 @@ public class RoomWorker implements Runnable {
      */
     public long t = 0;
     private void robotAi() {
-        if (System.currentTimeMillis() - t < 1000) return;
+        if (System.currentTimeMillis() - t < 50) return;
         t = System.currentTimeMillis();
         for (Room room : roomHashMap.values()) {
             if (room.status == Status.PREPARE)  continue;

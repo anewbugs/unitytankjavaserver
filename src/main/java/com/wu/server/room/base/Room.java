@@ -516,7 +516,7 @@ public class Room {
                }
                Point vector = Point.unitVector(route.startPoint,point);
                MsgSyncTank msgSyncTank = new MsgSyncTank();
-               if (route.startPoint.getDistance(point) <1){
+               if (route.startPoint.getDistance(point) <0.5){
                    msgSyncTank.id = roomMember.getId();
                    msgSyncTank.x = roomMember.getX() + vector.x;
                    msgSyncTank.y = roomMember.getY() ;
@@ -533,7 +533,7 @@ public class Room {
                }
                Broadcast(msgSyncTank);
                roomMember.setPosition(msgSyncTank.x,msgSyncTank.y,msgSyncTank.z,msgSyncTank.ex,msgSyncTank.ey,msgSyncTank.ez);
-               System.out.println(msgSyncTank);
+
            }
         }
     }
