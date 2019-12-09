@@ -22,6 +22,10 @@ public class ServerMain {
     private static final int PORT = 8000;
 
     public static void main(String[] args) {
+        for (String arg : args) {
+            System.out.println(args);
+        }
+
         int a = 10;
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         NioEventLoopGroup boosGroup = new NioEventLoopGroup();

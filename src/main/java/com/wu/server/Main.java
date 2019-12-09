@@ -11,6 +11,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 public class Main {
+
     //房间轮询时间
     static final int ADJUSTMENT_PERIOD = 10;
     static final String PROGRAM_END = "QUIT";
@@ -18,6 +19,7 @@ public class Main {
     //初始工作线程数目
     static final int WORKER_THREAD_INTI_NUMBER = 10;
     public static void main(String[] args) {
+
         ExecutorService exec = Executors.newCachedThreadPool();
         //初始化
         RoomBoss.init(exec,ADJUSTMENT_PERIOD);
