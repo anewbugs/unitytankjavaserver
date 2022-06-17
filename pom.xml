@@ -44,7 +44,7 @@
     <!--版本控制-->
     <properties>
         <netty-all.version>4.1.6.Final</netty-all.version>
-        <json-fast.version>1.2.32</json-fast.version>
+        <json-fast.version>1.2.83</json-fast.version>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
     <dependencies>
